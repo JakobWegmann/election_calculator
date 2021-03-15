@@ -2,7 +2,11 @@ import numpy as np
 import pandas as pd
 
 data = pd.read_csv(
-    "data/btw2017_kerg.csv", sep=";", skiprows=5, header=None, error_bad_lines=False
+    "src\\original_data\\election_results\\btw2017_kerg.csv",
+    sep=";",
+    skiprows=5,
+    header=None,
+    error_bad_lines=False,
 )
 
 delete = ["Nr", "gehört zu", "Vorperiode"]
