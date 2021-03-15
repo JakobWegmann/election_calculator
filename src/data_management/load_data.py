@@ -1,38 +1,49 @@
-import pandas as pd
 import numpy as np
-import shapefile
-import geopandas
-from shapely.geometry import Polygon
-import fiona
-import matplotlib
+import pandas as pd
 
-data = pd.read_csv("data/btw2017_kerg.csv", sep=';', skiprows=5, header=None, error_bad_lines=False)
+data = pd.read_csv(
+    "data/btw2017_kerg.csv", sep=";", skiprows=5, header=None, error_bad_lines=False
+)
 
-delete = ['Nr', 'gehört zu', 'Vorperiode']
+delete = ["Nr", "gehört zu", "Vorperiode"]
 for item in delete:
     data = data.loc[:, ~(data == item).any()]
     data.columns = range(data.shape[1])
 
-delete = ['Wahlberechtigte', 'Wähler', 'Ungültige', 'Gültige']
+delete = ["Wahlberechtigte", "Wähler", "Ungültige", "Gültige"]
 for item in delete:
     erststimmen = data.loc[:, (data == item).any()].columns[0]
-    zweitstimmen = erststimmen # After drop we the columns shifted.
+    zweitstimmen = erststimmen  # After drop we the columns shifted.
 
     data.drop(data.columns[erststimmen], axis=1, inplace=True)
     data.drop(data.columns[zweitstimmen], axis=1, inplace=True)
     data.columns = range(data.shape[1])
 
 for i in range(1, data.shape[1], 2):
-    data.loc[0, i+1] = data.loc[0, i]
+    data.loc[0, i + 1] = data.loc[0, i]
 data
 data.drop(index=2, inplace=True)
 data.reset_index(inplace=True, drop=True)
 data = data.T
 
-bundesländer = ['Bayern', 'Baden-Württemberg', 'Saarland', 'Nordrhein-Westfalen',
-                'Berlin', 'Hamburg', 'Niedersachsen', 'Thüringen',
-                'Bremen', 'Sachsen', 'Sachsen-Anhalt', 'Brandenburg',
-                'Rheinland-Pfalz', 'Schleswig-Holstein', 'Hessen', 'Mecklenburg-Vorpommern']
+bundesländer = [
+    "Bayern",
+    "Baden-Württemberg",
+    "Saarland",
+    "Nordrhein-Westfalen",
+    "Berlin",
+    "Hamburg",
+    "Niedersachsen",
+    "Thüringen",
+    "Bremen",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Brandenburg",
+    "Rheinland-Pfalz",
+    "Schleswig-Holstein",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+]
 for bundesland in bundesländer:
     data = data.loc[:, ~(data == bundesland).any()]
     data.columns = range(data.shape[1])
@@ -57,65 +68,66 @@ data.columns = data.loc[0, :]
 data.drop(index=0, inplace=True)
 data.reset_index(drop=True, inplace=True)
 
-data.rename(columns = {'Gebiet' : 'Partei', np.nan : 'Stimme'}, inplace=True)
+data.rename(columns={"Gebiet": "Partei", np.nan: "Stimme"}, inplace=True)
 data.fillna(0, inplace=True)
 
 gesamt = pd.DataFrame(columns=data.columns)
-gesamt.loc[0, 'Partei'] = 'Gesamt'
-gesamt.loc[0, 'Stimme'] = 'Erststimmen'
-gesamt.loc[1, 'Partei'] = 'Gesamt'
-gesamt.loc[1, 'Stimme'] = 'Zweitstimmen'
+gesamt.loc[0, "Partei"] = "Gesamt"
+gesamt.loc[0, "Stimme"] = "Erststimmen"
+gesamt.loc[1, "Partei"] = "Gesamt"
+gesamt.loc[1, "Stimme"] = "Zweitstimmen"
 
 wahlkreise = data.columns.to_list()
-for item in ['Partei', 'Stimme']:
+for item in ["Partei", "Stimme"]:
     wahlkreise.remove(item)
 
 if len(wahlkreise) == 300:
-    print('Genau 299 Wahlkreise plus Bundesgebiet vorhanden!')
+    print("Genau 299 Wahlkreise plus Bundesgebiet vorhanden!")
 else:
-    print('Zu viele Wahlkreise!')
+    print("Zu viele Wahlkreise!")
 
 for wahlkreis in wahlkreise:
-    gesamt.loc[0, wahlkreis] = data[data['Stimme'] == 'Erststimmen'].loc[:, wahlkreis].astype(int).sum()
-    gesamt.loc[1, wahlkreis] = data[data['Stimme'] == 'Zweitstimmen'].loc[:, wahlkreis].astype(int).sum()
+    gesamt.loc[0, wahlkreis] = (
+        data[data["Stimme"] == "Erststimmen"].loc[:, wahlkreis].astype(int).sum()
+    )
+    gesamt.loc[1, wahlkreis] = (
+        data[data["Stimme"] == "Zweitstimmen"].loc[:, wahlkreis].astype(int).sum()
+    )
 
-erststimmen = data[data['Stimme'] == 'Erststimmen'].copy()
+erststimmen = data[data["Stimme"] == "Erststimmen"].copy()
 erststimmen.reset_index(drop=True, inplace=True)
 
-zweitstimmen = data[data['Stimme'] == 'Zweitstimmen'].copy()
+zweitstimmen = data[data["Stimme"] == "Zweitstimmen"].copy()
 zweitstimmen.reset_index(drop=True, inplace=True)
 
 for wahlkreis in wahlkreise:
     # Erststimmen.
-    divide_erststimmen = gesamt[gesamt['Stimme'] == 'Erststimmen'].loc[0, wahlkreis]
+    divide_erststimmen = gesamt[gesamt["Stimme"] == "Erststimmen"].loc[0, wahlkreis]
     erststimmen[wahlkreis] = erststimmen[wahlkreis].astype(int).div(divide_erststimmen)
 
     # Zweistimmen.
-    divide_zweitstimmen = gesamt[gesamt['Stimme'] == 'Zweitstimmen'].loc[1, wahlkreis]
-    zweitstimmen[wahlkreis] = zweitstimmen[wahlkreis].astype(int).div(divide_zweitstimmen)
+    divide_zweitstimmen = gesamt[gesamt["Stimme"] == "Zweitstimmen"].loc[1, wahlkreis]
+    zweitstimmen[wahlkreis] = (
+        zweitstimmen[wahlkreis].astype(int).div(divide_zweitstimmen)
+    )
 
 # Direktmandate nach Erststimmen
 direktmandat = erststimmen.copy()
-direktmandat.drop(columns=['Stimme', 'Bundesgebiet'], inplace=True)
+direktmandat.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
 
-wahlkreise.remove('Bundesgebiet')
+wahlkreise.remove("Bundesgebiet")
 for wahlkreis in wahlkreise:
     direktmandat[wahlkreis] = direktmandat[wahlkreis] == direktmandat[wahlkreis].max()
     direktmandat[wahlkreis] = direktmandat[wahlkreis].astype(int)
 
-direktmandat.set_index('Partei', inplace=True)
+direktmandat.set_index("Partei", inplace=True)
 sitze_parlament = pd.DataFrame(direktmandat.sum(axis=1))
-sitze_parlament.columns = ['Direktmandate']
+sitze_parlament.columns = ["Direktmandate"]
 
 # Hypothetische Direktmandate
-direktmandat_hyp = pd.DataFrame(zweitstimmen[['Partei', 'Bundesgebiet']].copy())
-direktmandat_hyp['Bundesgebiet'] = direktmandat_hyp['Bundesgebiet'].multiply(598)
+direktmandat_hyp = pd.DataFrame(zweitstimmen[["Partei", "Bundesgebiet"]].copy())
+direktmandat_hyp["Bundesgebiet"] = direktmandat_hyp["Bundesgebiet"].multiply(598)
 
-sitze_parlament['Hypothetische Direktmandate'] = direktmandat_hyp.Bundesgebiet.to_list()
+sitze_parlament["Hypothetische Direktmandate"] = direktmandat_hyp.Bundesgebiet.to_list()
 sitze_parlament
 direktmandat[:7]
-
-# Getting geodata involved.
-file = 'data/btw17_geometrie_wahlkreise_shp.zip'
-geodata = geopandas.read_file(file)
-img = geodata.plot()
