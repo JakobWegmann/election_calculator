@@ -63,7 +63,7 @@ def _store_locations_by_round(loc, agents):
 
 def run_analysis(agents, model):
     """Given an initial set of *agents* and the *model*'s parameters,
-    return a list of dictionaries with *type: N x 2* items.
+    return a list of Dictionaries with *type: N x 2* items.
 
     """
     locations_by_round = [_get_locations_by_round_dict(model)]
