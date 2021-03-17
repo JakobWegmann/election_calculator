@@ -8,52 +8,6 @@ https://www.gesetze-im-internet.de/bwahlg/__6.html
 # import pandas as pd
 
 
-def election_of_landeslisten_2021(
-    zweitstimmen, total_available_listenplaetze, parties_eligible, direktmandate
-):
-    """Implementation of Bundeswahlgesetz
-    § 6 Wahl nach Landeslisten (2021)
-
-    Input:
-    zweitstimmen(DataFrame): Zweitstimmen within a Bundesland
-    parties_eligible(DateFrame): Parties that reached 5% or obtained
-        3 Direktmandate (Bundesebene)
-    total_available_listenplaetze(int): number of seats in parliament for the
-        respective Bundesland (depends on population, is published)
-    direktmandate(DataFrame): Direktmandate by party
-
-    Output:
-    parliamentarians_before_ausgleichsmandate(DataFrame):
-    """
-    # Für die Verteilung der nach Landeslisten zu besetzenden Sitze werden die für
-    #   jede Landesliste abgegebenen Zweitstimmen zusammengezählt.
-    #   zweitstimmen["sum_party"] = Depend on data strucute
-
-    # Drop parties that are not eligible for Listenplätze
-    #   (neither reach 5%  not won 3 Direktmandate)
-    #
-
-    # Use Sainte-Lague Zuteilungsdivisor to calculate seats by party
-    #   Der Zuteilungsdivisor ist so zu bestimmen, dass insgesamt so viele
-    #   Sitze auf die Landeslisten entfallen, wie Sitze zu vergeben sind.
-    #   Dazu wird zunächst die Gesamtzahl der Zweitstimmen aller zu berücksichtigenden
-    #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
-    #   verbleibenden Sitze geteilt.
-
-    divisor_step_1 = zweitstimmen["sum_party"].sum() / total_available_listenplaetze
-
-    parliamentarians_before_ausgleichsmandate = sainte_lague(
-        divisor_step_1, zweitstimmen, total_available_listenplaetze
-    )
-
-    # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
-    #   ist der Zuteilungsdivisor so HERAUFZUSETZEN, dass sich bei der Berechnung
-    #   die zu vergebende Sitzzahl ergibt; entfallen zu wenig Sitze auf die Landeslisten,
-    #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
-
-    return parliamentarians_before_ausgleichsmandate
-
-
 def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze):
     """Iterative Sainte-Lague procedure
 
@@ -84,3 +38,55 @@ def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze
         sainte_lague(preliminary_divisor + 0.01, party_votes)
     else:
         return party_votes["seats_after_round_1"]
+
+
+def election_of_landeslisten_2021(zweitstimmen, total_available_listenplaetze):
+    """Implementation of Bundeswahlgesetz
+    § 6 Wahl nach Landeslisten (2021)
+
+    Input:
+    zweitstimmen(DataFrame): Zweitstimmen within a Bundesland of eligible parties
+    total_available_listenplaetze(int): number of seats in parliament for the
+        respective Bundesland (depends on population, is published)
+
+    Output:
+    parliamentarians_before_ausgleichsmandate(DataFrame):
+    """
+
+    # Use Sainte-Lague Zuteilungsdivisor to calculate seats by party
+    #   Der Zuteilungsdivisor ist so zu bestimmen, dass insgesamt so viele
+    #   Sitze auf die Landeslisten entfallen, wie Sitze zu vergeben sind.
+    #   Dazu wird zunächst die Gesamtzahl der Zweitstimmen aller zu berücksichtigenden
+    #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
+    #   verbleibenden Sitze geteilt.
+
+    divisor_step_1 = zweitstimmen["votes"].sum() / total_available_listenplaetze
+
+    landesliste_before_ausgleichsmandate = sainte_lague(
+        divisor_step_1, zweitstimmen, total_available_listenplaetze
+    )
+
+    # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
+    #   ist der Zuteilungsdivisor so HERAUFZUSETZEN, dass sich bei der Berechnung
+    #   die zu vergebende Sitzzahl ergibt; entfallen zu wenig Sitze auf die Landeslisten,
+    #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
+
+    return landesliste_before_ausgleichsmandate
+
+
+def number_parliamntaries_by_bland_2011(parliamentaries_before_ausgleichsmandate):
+    """For each Bundesland
+
+    Input:
+        Party in rows
+    Output:
+        For each party: number of minimum parliamentarians
+    """
+    parliamentaries_before_ausgleichsmandate["num_min_candidates"] = max(
+        parliamentaries_before_ausgleichsmandate[
+            "landesliste_before_ausgleichsmandate"
+        ],
+        parliamentaries_before_ausgleichsmandate["erstmandate_by_bundesland"],
+    )
+
+    return parliamentaries_before_ausgleichsmandate["num_min_candidates"]
