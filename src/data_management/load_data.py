@@ -9,15 +9,17 @@ data = pd.read_csv(
     error_bad_lines=False,
 )
 
+
 delete = ["Nr", "gehört zu", "Vorperiode"]
 for item in delete:
-    data = data.loc[:, ~(data == item).any()]
-    data.columns = range(data.shape[1])
+    data = data.loc[:, ~(data == item).any()]  # Keep if no cell contains `item`
+    data.columns = range(data.shape[1])  # Resets column indices to 0,1,2,...
+
 
 delete = ["Wahlberechtigte", "Wähler", "Ungültige", "Gültige"]
 for item in delete:
     erststimmen = data.loc[:, (data == item).any()].columns[0]
-    zweitstimmen = erststimmen  # After drop we the columns shifted.
+    zweitstimmen = erststimmen  # After drop the columns shifted.
 
     data.drop(data.columns[erststimmen], axis=1, inplace=True)
     data.drop(data.columns[zweitstimmen], axis=1, inplace=True)
