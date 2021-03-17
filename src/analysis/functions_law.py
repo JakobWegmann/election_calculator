@@ -4,8 +4,21 @@ Bundeswahlgesetz §6
 https://www.gesetze-im-internet.de/bwahlg/__6.html
 
 """
-# import numpy as np
-# import pandas as pd
+
+
+def direktmandate(votes_by_party):
+    """Determine party that wins Direktmandat
+
+    Input:
+    votes_by_party (DataFrame): By party the number of votes
+
+    Output:
+    direktmandat(DataFrame): Indicates that party that wins Direktmandat
+    """
+
+    direktmandat = votes_by_party == votes_by_party.max()
+    direktmandat = direktmandat.astype(int)
+    return direktmandat
 
 
 def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze):

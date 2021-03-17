@@ -110,10 +110,16 @@ for wahlkreis in wahlkreise:
     )
 
 erststimmen = data[data["Stimme"] == "Erststimmen"].copy()
+
+erststimmen_to_save = erststimmen.copy()
+erststimmen_to_save.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
+erststimmen_to_save.to_json(f"{path}/bld/data/erststimmen.json")
+
 erststimmen.reset_index(drop=True, inplace=True)
 
 zweitstimmen = data[data["Stimme"] == "Zweitstimmen"].copy()
 zweitstimmen.reset_index(drop=True, inplace=True)
+
 
 for wahlkreis in wahlkreise:
     # Erststimmen.
