@@ -2,6 +2,7 @@
 Bundeswahlgesetz §6
 
 https://www.gesetze-im-internet.de/bwahlg/__6.html
+https://www.bundestagswahl-bw.de/sitzberechnung-btw#c31948
 
 """
 
