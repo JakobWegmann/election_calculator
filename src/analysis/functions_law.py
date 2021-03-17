@@ -54,7 +54,7 @@ def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze
 
 def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenplaetze):
     """Implementation of Bundeswahlgesetz
-    § 6 Wahl nach Landeslisten (2021) Satz 1 und 2
+    § 6 Wahl nach Landeslisten (2021) Absatz 1 und 2
 
     Input:
     zweitstimmen_by_party(DataFrame): by party Zweitstimmen within a Bundesland
