@@ -36,29 +36,28 @@ def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze
 
     # Jede Landesliste erhält so viele Sitze, wie sich nach Teilung der Summe
     # ihrer erhaltenen Zweitstimmen durch einen Zuteilungsdivisor ergeben.
-    party_votes["seats_before_round_1"] = (
-        party_votes["zweitstimmmen"] / preliminary_divisor
-    )
+    listenplaetze = party_votes.divide(preliminary_divisor).copy()
 
     # "Zahlenbruchteile unter 0,5 werden auf die darunter liegende ganze Zahl abgerundet,
     #  solche über 0,5 werden auf die darüber liegende ganze Zahl aufgerundet. "
-    party_votes["seats_after_round_1"] = party_votes["seats_before_round_1"].round(0)
+    listenplaetze = listenplaetze.round(0).astype(int)
 
-    # Calculate sum of seats after first iteration
-    sum_of_seats = party_votes["seats_after_round_1"].sum()
+    # Calculate sum of listenplaetze after first iteration
+    sum_of_listenplaetze = listenplaetze.sum()
 
-    if sum_of_seats > total_available_listenplaetze:
+    if sum_of_listenplaetze > total_available_listenplaetze:
         sainte_lague(preliminary_divisor + 0.01, party_votes)
     else:
-        return party_votes["seats_after_round_1"]
+        return listenplaetze
 
 
-def election_of_landeslisten_2021(zweitstimmen, total_available_listenplaetze):
+def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenplaetze):
     """Implementation of Bundeswahlgesetz
-    § 6 Wahl nach Landeslisten (2021)
+    § 6 Wahl nach Landeslisten (2021) Satz 1 und 2
 
     Input:
-    zweitstimmen(DataFrame): Zweitstimmen within a Bundesland of eligible parties
+    zweitstimmen_by_party(DataFrame): by party Zweitstimmen within a Bundesland
+        of eligible parties
     total_available_listenplaetze(int): number of seats in parliament for the
         respective Bundesland (depends on population, is published)
 
@@ -73,10 +72,10 @@ def election_of_landeslisten_2021(zweitstimmen, total_available_listenplaetze):
     #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
     #   verbleibenden Sitze geteilt.
 
-    divisor_step_1 = zweitstimmen["votes"].sum() / total_available_listenplaetze
+    preliminary_divisor = zweitstimmen_by_party.sum() / total_available_listenplaetze
 
     landesliste_before_ausgleichsmandate = sainte_lague(
-        divisor_step_1, zweitstimmen, total_available_listenplaetze
+        preliminary_divisor, zweitstimmen_by_party, total_available_listenplaetze
     )
 
     # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
