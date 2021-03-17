@@ -1,18 +1,17 @@
 import numpy as np
 import pandas as pd
-import os
 
-user = "Dominik"
+user = "Jakob"
 
 if user == "Jakob":
-    path = "path"
+    path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
 elif user == "Dominik":
     path = "/home/dominik/Dokumente/election_calcuator"
 else:
     print("No such user exists!")
 
 data = pd.read_csv(
-    "src\\original_data\\election_results\\btw2017_kerg.csv",
+    f"{path}/src/original_data/election_results/btw2017_kerg.csv",
     sep=";",
     skiprows=5,
     header=None,
