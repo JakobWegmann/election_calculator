@@ -1,17 +1,25 @@
 import numpy as np
 import pandas as pd
 
-user = "Jakob"
+# user = "Jakob"
 
-if user == "Jakob":
-    path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
-elif user == "Dominik":
-    path = "/home/dominik/Dokumente/election_calcuator"
-else:
-    print("No such user exists!")
+# if user == "Jakob":
+#     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
+# elif user == "Dominik":
+#     path = "/home/dominik/Dokumente/election_calcuator"
+# else:
+#     print("No such user exists!")
+
+# data = pd.read_csv(
+#     f"{path}/src/original_data/election_results/btw2017_kerg.csv",
+#     sep=";",
+#     skiprows=5,
+#     header=None,
+#     error_bad_lines=False,
+# )
 
 data = pd.read_csv(
-    f"{path}/src/original_data/election_results/btw2017_kerg.csv",
+    "../original_data/election_results/btw2017_kerg.csv",
     sep=";",
     skiprows=5,
     header=None,
@@ -34,7 +42,8 @@ for item in delete:
     data.drop(data.columns[zweitstimmen], axis=1, inplace=True)
     data.columns = range(data.shape[1])
 
-for i in range(1, data.shape[1], 2):
+
+for i in range(2, data.shape[1], 2):
     data.loc[0, i + 1] = data.loc[0, i]
 data
 data.drop(index=2, inplace=True)
@@ -113,13 +122,17 @@ erststimmen = data[data["Stimme"] == "Erststimmen"].copy()
 
 erststimmen_to_save = erststimmen.copy()
 erststimmen_to_save.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
-erststimmen_to_save.to_json(f"{path}/bld/data/erststimmen.json")
+erststimmen_to_save.to_json("../../bld/data/erststimmen.json")
 
 erststimmen.reset_index(drop=True, inplace=True)
 
 zweitstimmen = data[data["Stimme"] == "Zweitstimmen"].copy()
 zweitstimmen.reset_index(drop=True, inplace=True)
 
+
+zweitstimmen_to_save = zweitstimmen.copy()
+zweitstimmen_to_save.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
+zweitstimmen_to_save.to_json("../../bld/data/zweitstimmen.json")
 
 for wahlkreis in wahlkreise:
     # Erststimmen.

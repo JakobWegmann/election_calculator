@@ -26,10 +26,10 @@ zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json")
 zweitstimmen.set_index(["Partei"], inplace=True)
 zweitstimmen["sum by party"] = zweitstimmen.sum(axis=1).astype("int")
 
-# Drop non-eligible parties (5% Hürde, sum by party)
+# ! Drop non-eligible parties (5% Hürde, sum by party)
 # Not implemented yet
 
-total_available_listenplaetze = 298
+total_available_listenplaetze = 299
 
 listenplätze_by_party = election_of_landeslisten_2021(
     zweitstimmen["sum by party"], total_available_listenplaetze
@@ -45,8 +45,8 @@ listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(ax
 
 
 # offene Baustellen:
-# Relative Pfade (pytask? oder zu nervig?)
-# Stimmen pro Bundesland als Input (momentan gesamter Bund um Code zu testen)
-# Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen
-# Noch zu finden: Sitze pro Bundesland
-# Drop of non-eligible parties (relevant for FDP)
+# TODO Relative Pfade (pytask? oder zu nervig?)
+# TODO Stimmen pro Bundesland als Input (momentan gesamter Bund um Code zu testen)
+# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen
+# TODO Noch zu finden: Sitze pro Bundesland
+# TODO Drop of non-eligible parties (relevant for FDP)

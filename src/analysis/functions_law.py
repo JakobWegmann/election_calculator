@@ -85,21 +85,3 @@ def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenp
     #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
 
     return landesliste_before_ausgleichsmandate
-
-
-def number_parliamntaries_by_bland_2011(parliamentaries_before_ausgleichsmandate):
-    """For each Bundesland
-
-    Input:
-        Party in rows
-    Output:
-        For each party: number of minimum parliamentarians
-    """
-    parliamentaries_before_ausgleichsmandate["num_min_candidates"] = max(
-        parliamentaries_before_ausgleichsmandate[
-            "landesliste_before_ausgleichsmandate"
-        ],
-        parliamentaries_before_ausgleichsmandate["erstmandate_by_bundesland"],
-    )
-
-    return parliamentaries_before_ausgleichsmandate["num_min_candidates"]
