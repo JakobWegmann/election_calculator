@@ -1,4 +1,7 @@
 import pandas as pd
+from functions_law import direktmandate
+
+# from functions_law import election_of_landeslisten_2021
 
 user = "Jakob"
 
@@ -9,24 +12,19 @@ elif user == "Dominik":
 else:
     print("No such user exists!")
 
-
-def direktmandate(votes_by_party):
-    """Determine party that wins Direktmandat
-
-    Input:
-    votes_by_party (DataFrame): By party the number of votes
-
-    Output:
-    direktmandat(DataFrame): Indicates that party that wins Direktmandat
-    """
-
-    direktmandat = votes_by_party == votes_by_party.max()
-    direktmandat = direktmandat.astype(int)
-    return direktmandat
-
-
 erststimmen = pd.read_json(f"{path}/bld/data/erststimmen.json")
 
-erststimmen.set_index(["Partei"])
+erststimmen.set_index(["Partei"], inplace=True)
 
 direktmandate = erststimmen.apply(direktmandate)
+
+direktmandate["sum by party"] = direktmandate.sum(axis=1).astype("int")
+
+# Drop non-eligible parties (5% Hürde, sum by party)
+# Not implemented yet
+
+
+total_available_listenplaetze = 298
+# zweitstimmen
+
+# election_of_landeslisten_2021(zweitstimmen, total_available_listenplaetze)
