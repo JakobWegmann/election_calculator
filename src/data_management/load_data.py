@@ -1,5 +1,15 @@
 import numpy as np
 import pandas as pd
+import os
+
+user = "Dominik"
+
+if user == "Jakob":
+    path = "path"
+elif user == "Dominik":
+    path = "/home/dominik/Dokumente/election_calcuator"
+else:
+    print("No such user exists!")
 
 data = pd.read_csv(
     "src\\original_data\\election_results\\btw2017_kerg.csv",
