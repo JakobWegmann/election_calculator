@@ -22,6 +22,26 @@ def direktmandate(votes_by_party):
     return direktmandat
 
 
+def eligible_parties(votes_germany, direktmandate):
+    """ Determine which parties reach the Bundestag.
+
+    Input:
+    votes_germany (DataFrame): By party the number of votes in Germany
+    direktmandate (DataFrame): By party the number of Direktmandate
+
+    Output:
+    eligible_parties (DataFrame): By party the number of votes of all eligible parties in the federal state
+    """
+    
+    eligible_direktmandate = direktmandate[direktmandate > 3]
+    eligible_huerde = votes_germany[votes_germany["Bundesgebiet"] > 0.05]
+
+    temp = eligible_direktmandate.index.tolist()
+    temp.append(eligible_huerde.index.tolist())
+
+    return temp
+
+
 def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze):
     """Iterative Sainte-Lague procedure
 

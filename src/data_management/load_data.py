@@ -1,7 +1,13 @@
 import numpy as np
 import pandas as pd
+import os
 
-# user = "Jakob"
+user = "Dominik"
+
+if user == "Dominik":
+    os.chdir("/home/dominik/Dokumente/election_calculator/src/data_management/")
+else:
+    pass
 
 # if user == "Jakob":
 #     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
@@ -27,6 +33,7 @@ data = pd.read_csv(
 )
 
 
+# * Delete unnecessary columns in two steps.
 delete = ["Nr", "gehört zu", "Vorperiode"]
 for item in delete:
     data = data.loc[:, ~(data == item).any()]  # Keep if no cell contains `item`
@@ -41,37 +48,17 @@ for item in delete:
     data.drop(data.columns[erststimmen], axis=1, inplace=True)
     data.drop(data.columns[zweitstimmen], axis=1, inplace=True)
     data.columns = range(data.shape[1])
+data.loc[:, :7]
 
-
-for i in range(2, data.shape[1], 2):
+for i in range(1, data.shape[1], 2):
     data.loc[0, i + 1] = data.loc[0, i]
-data
+data.loc[:, :3]
+
 data.drop(index=2, inplace=True)
 data.reset_index(inplace=True, drop=True)
 data = data.T
 
-bundesländer = [
-    "Bayern",
-    "Baden-Württemberg",
-    "Saarland",
-    "Nordrhein-Westfalen",
-    "Berlin",
-    "Hamburg",
-    "Niedersachsen",
-    "Thüringen",
-    "Bremen",
-    "Sachsen",
-    "Sachsen-Anhalt",
-    "Brandenburg",
-    "Rheinland-Pfalz",
-    "Schleswig-Holstein",
-    "Hessen",
-    "Mecklenburg-Vorpommern",
-]
-for bundesland in bundesländer:
-    data = data.loc[:, ~(data == bundesland).any()]
-    data.columns = range(data.shape[1])
-
+# * Drop all empty columns and rows.
 zero_cols = []
 for column in range(0, data.shape[1], 1):
     if data[column].isnull().all():
@@ -94,6 +81,38 @@ data.reset_index(drop=True, inplace=True)
 
 data.rename(columns={"Gebiet": "Partei", np.nan: "Stimme"}, inplace=True)
 data.fillna(0, inplace=True)
+
+# * Get a list of all parties.
+parteien = data.loc[:, 'Partei'].to_list()
+
+# * All federal states.
+bundesländer = [
+    "Bayern",
+    "Baden-Württemberg",
+    "Saarland",
+    "Nordrhein-Westfalen",
+    "Berlin",
+    "Hamburg",
+    "Niedersachsen",
+    "Thüringen",
+    "Bremen",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Brandenburg",
+    "Rheinland-Pfalz",
+    "Schleswig-Holstein",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+]
+
+# * Collect all overall results from federal states in separate dataframe.
+temp = bundesländer.copy()
+temp.insert(0, 'Stimme')
+temp.insert(0, 'Partei')
+ergebnisse_bundesländer = data[temp].copy()
+
+# * Drop federal states from data.
+data.drop(columns=bundesländer, inplace=True)
 
 gesamt = pd.DataFrame(columns=data.columns)
 gesamt.loc[0, "Partei"] = "Gesamt"
@@ -144,6 +163,8 @@ for wahlkreis in wahlkreise:
     zweitstimmen[wahlkreis] = (
         zweitstimmen[wahlkreis].astype(int).div(divide_zweitstimmen)
     )
+
+zweitstimmen.to_json("../../bld/data/zweitstimmen_prozentual.json")
 
 # Direktmandate nach Erststimmen
 direktmandat = erststimmen.copy()
