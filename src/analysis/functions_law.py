@@ -22,8 +22,8 @@ def direktmandate(votes_by_party):
     return direktmandat
 
 
-def eligible_parties(votes_fed_state, votes_germany, direktmandate):
-    """ Determine which parties reach the Bundestag in a federal state.
+def eligible_parties(votes_germany, direktmandate):
+    """Determine which parties reach the Bundestag in a federal state.
 
     Input:
     votes_fed_state (DataFrame): By party the number of votes in the federal state
@@ -31,11 +31,14 @@ def eligible_parties(votes_fed_state, votes_germany, direktmandate):
     direktmandate (DataFrame): By party the number of Direktmandate
 
     Output:
-    eligible_parties (DataFrame): By party the number of votes of all eligible parties in the federal state
+    eligible_parties (DataFrame): By party the number of votes of all
+        eligible parties in the federal state
     """
-    
+
     eligible_direktmandate = direktmandate[direktmandate > 3].index.tolist()
-    eligible_huerde = votes_germany[votes_germany["Bundesgebiet"] > 0.05].loc[:, 'Partei'].tolist()
+    eligible_huerde = (
+        votes_germany[votes_germany["Bundesgebiet"] > 0.05].loc[:, "Partei"].tolist()
+    )
 
     eligible_parties = list(dict.fromkeys(eligible_direktmandate + eligible_huerde))
 

@@ -1,10 +1,16 @@
-import pandas as pd
 import os
 
-user = "Dominik"
+import pandas as pd
+
+user = "Jakob"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
+else:
+    pass
+
+if user == "Jakob":
+    os.chdir("C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator/src/analysis")
 else:
     pass
 
@@ -35,10 +41,13 @@ zweitstimmen.set_index(["Partei"], inplace=True)
 zweitstimmen["sum by party"] = zweitstimmen.sum(axis=1).astype("int")
 
 zweitstimmen_prozentual = pd.read_json(f"{path}/bld/data/zweitstimmen_prozentual.json")
-zweitstimmen_prozentual.drop(columns='Stimme', inplace=True)
+zweitstimmen_prozentual.drop(columns="Stimme", inplace=True)
 
 # ! Drop non-eligible parties (5% Hürde, sum by party)
-eligible_votes = eligible_parties(zweitstimmen_prozentual[["Partei", "Bundesgebiet"]], direktmandate_by_party)
+eligible_votes = eligible_parties(
+    zweitstimmen_prozentual[["Partei", "Bundesgebiet"]], direktmandate_by_party
+)
+
 
 total_available_listenplaetze = 299
 
@@ -58,6 +67,8 @@ listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(ax
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
 # TODO Stimmen pro Bundesland als Input (momentan gesamter Bund um Code zu testen)
-# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen -> ist in load_data.py. Speichern, etc.?
+# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen
+# TODO      -> ist in load_data.py. Speichern, etc.?
 # TODO Noch zu finden: Sitze pro Bundesland
-# TODO Drop of non-eligible parties (relevant for FDP) -> Funktion eligible_parties soll das erledigen.
+# TODO Drop of non-eligible parties (relevant for FDP)
+# TODO -> Funktion eligible_parties soll das erledigen.
