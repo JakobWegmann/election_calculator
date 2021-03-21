@@ -1,18 +1,20 @@
 import pandas as pd
 import os
 
+user = "Dominik"
+
+if user == "Dominik":
+    os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
+else:
+    pass
+
 from functions_law import direktmandate
 from functions_law import election_of_landeslisten_2021
-
-user = "Dominik"
+from functions_law import eligible_parties
 
 if user == "Jakob":
     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
 elif user == "Dominik":
-    os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
-    from functions_law import direktmandate
-    from functions_law import election_of_landeslisten_2021
-    from functions_law import eligible_parties
     path = "/home/dominik/Dokumente/election_calculator"
 else:
     print("No such user exists!")
@@ -36,7 +38,7 @@ zweitstimmen_prozentual = pd.read_json(f"{path}/bld/data/zweitstimmen_prozentual
 zweitstimmen_prozentual.drop(columns='Stimme', inplace=True)
 
 # ! Drop non-eligible parties (5% Hürde, sum by party)
-eligible = eligible_parties(zweitstimmen_prozentual[["Partei", "Bundesgebiet"]], direktmandate_by_party)
+eligible_votes = eligible_parties(zweitstimmen_prozentual[["Partei", "Bundesgebiet"]], direktmandate_by_party)
 
 total_available_listenplaetze = 299
 

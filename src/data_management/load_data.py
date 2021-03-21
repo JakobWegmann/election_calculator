@@ -105,6 +105,21 @@ bundesländer = [
     "Mecklenburg-Vorpommern",
 ]
 
+bundesländer_col = {}
+# * Get Wahlkreise of each Bundesland in a dictionary columns.
+for bundesland in bundesländer:
+    bundesländer_col[bundesland] = data.columns.get_loc(bundesland)
+
+bundesländer_col['Stimme'] = 1
+bundesländer_col = dict(sorted(bundesländer_col.items(), key=lambda item: item[1]))
+bundesländer_wahlkreise = {}
+
+previous_key = 'Stimme'
+for key in bundesländer_col:
+    bundesländer_wahlkreise[key] = data.columns[(bundesländer_col[previous_key]+1):(bundesländer_col[key])].tolist() 
+    previous_key = key
+bundesländer_wahlkreise.pop('Stimme', None) # Remove the key 'Stimme'
+
 # * Collect all overall results from federal states in separate dataframe.
 temp = bundesländer.copy()
 temp.insert(0, 'Stimme')
