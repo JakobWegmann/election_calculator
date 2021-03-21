@@ -58,6 +58,6 @@ listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(ax
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
 # TODO Stimmen pro Bundesland als Input (momentan gesamter Bund um Code zu testen)
-# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen
+# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen -> ist in load_data.py. Speichern, etc.?
 # TODO Noch zu finden: Sitze pro Bundesland
-# TODO Drop of non-eligible parties (relevant for FDP)
+# TODO Drop of non-eligible parties (relevant for FDP) -> Funktion eligible_parties soll das erledigen.

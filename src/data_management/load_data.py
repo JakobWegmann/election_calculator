@@ -105,8 +105,8 @@ bundesländer = [
     "Mecklenburg-Vorpommern",
 ]
 
-bundesländer_col = {}
 # * Get Wahlkreise of each Bundesland in a dictionary columns.
+bundesländer_col = {}
 for bundesland in bundesländer:
     bundesländer_col[bundesland] = data.columns.get_loc(bundesland)
 
