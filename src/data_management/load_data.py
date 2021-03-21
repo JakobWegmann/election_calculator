@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pd
 import os
+import pickle
+
 
 user = "Dominik"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/data_management/")
 else:
-    pass
+   pass
 
 # if user == "Jakob":
 #     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
@@ -82,6 +84,8 @@ data.reset_index(drop=True, inplace=True)
 data.rename(columns={"Gebiet": "Partei", np.nan: "Stimme"}, inplace=True)
 data.fillna(0, inplace=True)
 
+data.to_json("../../bld/data/raw_data.json")
+
 # * Get a list of all parties.
 parteien = data.loc[:, 'Partei'].to_list()
 
@@ -120,7 +124,13 @@ for key in bundesländer_col:
     previous_key = key
 bundesländer_wahlkreise.pop('Stimme', None) # Remove the key 'Stimme'
 
-# * Collect all overall results from federal states in separate dataframe.
+with open('../../bld/data/wahlkreis_bundeslaender.pickle', 'wb') as handle:
+    pickle.dump(bundesländer_wahlkreise, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+# TODO: Delete all of this later. See if something needs to be ported.
+"""
+# * Collect overall results from federal states in separate dataframe.
 temp = bundesländer.copy()
 temp.insert(0, 'Stimme')
 temp.insert(0, 'Partei')
@@ -201,3 +211,4 @@ direktmandat_hyp["Bundesgebiet"] = direktmandat_hyp["Bundesgebiet"].multiply(598
 sitze_parlament["Hypothetische Direktmandate"] = direktmandat_hyp.Bundesgebiet.to_list()
 sitze_parlament
 direktmandat[:7]
+"""
