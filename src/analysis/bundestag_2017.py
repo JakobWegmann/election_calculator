@@ -53,6 +53,9 @@ eligible = eligible_parties(data, direktmandate_by_party)
 bundesländer = list(bundesländer_wahlkreise.keys())
 zweitstimmenanteil_by_state = zweitstimmen_by_state(data, bundesländer)
 
+# * Calculation of Mindestzahl.
+# TODO: Implement this calculation with the help of population_data.json
+
 # zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json") # TODO: Delete this line later.
 zweitstimmen.set_index(["Partei"], inplace=True)
 zweitstimmen["sum by party"] = zweitstimmen.sum(axis=1).astype("int")
