@@ -7,6 +7,30 @@ https://www.bundestagswahl-bw.de/sitzberechnung-btw#c31948
 """
 
 
+def partition_of_votes(raw_data, wahlkreise):
+    """Partition the raw data into "Erststimmen" und "Zweitstimmen".
+
+    Input:
+    raw_data (DataFrame): cleaned election data
+    wahlkreise (list): list with all Wahlkreise
+
+    Output:
+    erststimmen (DataFrame): By party the number of Erststimmen in each Wahlkreis
+    zweitimmen (DataFrame): By party the number of Zweitstimmen in each Wahlkreis
+
+    """
+
+    column_names = ["Partei"] + wahlkreise
+    erststimmen = (
+        raw_data[raw_data["Stimme"] == "Erststimmen"].loc[:, column_names].copy()
+    )
+    zweitstimmen = (
+        raw_data[raw_data["Stimme"] == "Zweitstimmen"].loc[:, column_names].copy()
+    )
+
+    return erststimmen, zweitstimmen
+
+
 def direktmandate(votes_by_party):
     """Determine party that wins Direktmandat
 
@@ -22,27 +46,54 @@ def direktmandate(votes_by_party):
     return direktmandat
 
 
-def eligible_parties(votes_germany, direktmandate):
+def eligible_parties(data, direktmandate):
     """Determine which parties reach the Bundestag in a federal state.
 
     Input:
-    votes_fed_state (DataFrame): By party the number of votes in the federal state
-    votes_germany (DataFrame): By party the number of votes in Germany
+    data (DataFrame): cleaned data
     direktmandate (DataFrame): By party the number of Direktmandate
 
     Output:
-    eligible_parties (DataFrame): By party the number of votes of all
-        eligible parties in the federal state
+    eligible_parties (list): all parties that are eligible for BT seats
     """
+
+    bundesgebiet = (
+        data[data["Stimme"] == "Zweitstimmen"].loc[:, ["Partei", "Bundesgebiet"]].copy()
+    )
+    bundesgebiet.set_index(["Partei"], inplace=True)
+    bundesgebiet = bundesgebiet.div(bundesgebiet.sum(axis=0))
+    bundesgebiet.reset_index(inplace=True)
 
     eligible_direktmandate = direktmandate[direktmandate > 3].index.tolist()
     eligible_huerde = (
-        votes_germany[votes_germany["Bundesgebiet"] > 0.05].loc[:, "Partei"].tolist()
+        bundesgebiet[bundesgebiet["Bundesgebiet"] > 0.05].loc[:, "Partei"].tolist()
     )
 
     eligible_parties = list(dict.fromkeys(eligible_direktmandate + eligible_huerde))
 
     return eligible_parties
+
+
+def zweitstimmenanteil_by_state(data, bundesländer):
+    """Determine the number of Bundestag seats by party for each federal state.
+
+    Input:
+    data (DataFrame): cleaned data
+    bundesländer (list): list of federal states
+
+    Output:
+    bt_seats_by_state (DataFrame): By party the number of BT seats in each Bundesland
+
+    """
+
+    column_names = ["Partei"] + bundesländer
+    zweitstimmen_by_state = (
+        data[data["Stimme"] == "Zweitstimmen"].loc[:, column_names].copy()
+    )
+    zweitstimmen_by_state.set_index(["Partei"], inplace=True)
+    zweitstimmen_by_state = zweitstimmen_by_state.div(zweitstimmen_by_state.sum(axis=0))
+
+    return zweitstimmen_by_state
 
 
 def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze):

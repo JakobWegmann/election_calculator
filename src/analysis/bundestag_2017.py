@@ -1,4 +1,5 @@
 import os
+import pickle
 
 import pandas as pd
 
@@ -14,7 +15,9 @@ if user == "Jakob":
 else:
     pass
 
+from functions_law import partition_of_votes
 from functions_law import direktmandate
+from functions_law import zweitstimmen_by_state
 from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
 
@@ -25,9 +28,24 @@ elif user == "Dominik":
 else:
     print("No such user exists!")
 
-# Calculation of Direktmandate
-erststimmen = pd.read_json(f"{path}/bld/data/erststimmen.json")
+# * Load the data we need. (Left as raw as possible.)
+data = pd.read_json(f"{path}/bld/data/raw_data.json")
 
+with open("../../bld/data/wahlkreis_bundeslaender.pickle", "rb") as handle:
+    bundesländer_wahlkreise = pickle.load(handle)
+
+wahlkreise = []
+for bundesland in bundesländer_wahlkreise.keys():
+    wahlkreise = wahlkreise + bundesländer_wahlkreise[bundesland]
+
+# * Separating Erst- und Zweitstimmen.
+erststimmen, zweitstimmen = partition_of_votes(data, wahlkreise)
+
+# Calculation of Direktmandate
+# TODO: Delete next line later.
+# erststimmen = pd.read_json(f"{path}/bld/data/erststimmen.json")
+
+# * Calculate Direktmandate.
 erststimmen.set_index(["Partei"], inplace=True)
 
 direktmandate = erststimmen.apply(direktmandate)
@@ -35,19 +53,17 @@ direktmandate = erststimmen.apply(direktmandate)
 direktmandate_by_party = direktmandate.sum(axis=1).astype("int").copy()
 direktmandate_by_party.name = "direktmandate"
 
-# Calculation of Listenplätze (first round: on Bundesländer level)
-zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json")
+# * Determine parties that are eligible.
+eligible = eligible_parties(data, direktmandate_by_party)
+
+# * Calculation of Listenplätze (first round: on Bundesländer level)
+bundesländer = list(bundesländer_wahlkreise.keys())
+zweitstimmenanteil_by_state = zweitstimmen_by_state(data, bundesländer)
+
+# TODO: Delete next line later.
+# zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json")
 zweitstimmen.set_index(["Partei"], inplace=True)
 zweitstimmen["sum by party"] = zweitstimmen.sum(axis=1).astype("int")
-
-zweitstimmen_prozentual = pd.read_json(f"{path}/bld/data/zweitstimmen_prozentual.json")
-zweitstimmen_prozentual.drop(columns="Stimme", inplace=True)
-
-# ! Drop non-eligible parties (5% Hürde, sum by party)
-eligible_votes = eligible_parties(
-    zweitstimmen_prozentual[["Partei", "Bundesgebiet"]], direktmandate_by_party
-)
-
 
 total_available_listenplaetze = 299
 
