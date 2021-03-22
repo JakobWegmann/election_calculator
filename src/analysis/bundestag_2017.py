@@ -97,20 +97,23 @@ for bundesland in bundesländer_wahlkreise.keys():
 
 mindestsitzzahl = pd.DataFrame(index=eligible, columns=bundesländer)
 
-temp = list(set(direktmandate_bundesland.index.tolist()) - set(eligible))
-listenplätze_bundesland.loc[temp] = 0
+# temp = list(set(direktmandate_bundesland.index.tolist()) - set(eligible))
+# listenplätze_bundesland.loc[temp] = 0
 for bundesland in bundesländer:
     for partei in eligible:
         mindestsitzzahl.loc[partei, bundesland] = max(
             listenplätze_bundesland.loc[partei, bundesland],
             direktmandate_bundesland.loc[partei, bundesland],
         )
-
+mindestsitzzahl.index.rename("Partei", inplace=True)
 
 # # Calculate number of seats before Ausgleichsmandate
 zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
+zweitstimmen_bundesgebiet.set_index(["Partei"], inplace=True)
 
 bundestag_seats_by_party = size_bundestag(zweitstimmen_bundesgebiet, mindestsitzzahl)
+
+bundestag_seats = pd.concat([zweitstimmen_bundesgebiet, mindestsitzzahl])
 
 # Ausgleichsmandate
 
