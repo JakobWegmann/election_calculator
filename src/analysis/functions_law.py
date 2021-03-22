@@ -142,12 +142,19 @@ def sainte_lague(preliminary_divisor, data, total_available_seats):
 
     allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
 
-    while sum_of_seats > total_available_seats:
-        preliminary_divisor = preliminary_divisor + 50
+    while sum_of_seats != total_available_seats:
+        if sum_of_seats > total_available_seats:
+            preliminary_divisor = preliminary_divisor + 50
+        elif sum_of_seats < total_available_seats:
+            preliminary_divisor = preliminary_divisor - 50
+        else:
+            pass
+        
         allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
     else:
         return allocated_seats, preliminary_divisor
-
+    
+ 
 
 def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenplaetze):
     """Implementation of Bundeswahlgesetz
