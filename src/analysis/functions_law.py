@@ -198,3 +198,28 @@ def size_bundestag(zweitstimmen_by_party_total, minimum_members_by_land_and_part
         "seats_unrounded"
     ].round(0)
     return bundestag_seats_by_party["seats_rounded"]
+
+
+def redistribution_bundestag_seats(
+    zweitstimmen_for_party_by_land, bundestag_seats_for_party
+):
+    """Following Heft 3. Endgültige Ergebnisse nach Wahlkreisen (2017) p.415 ff.
+
+    Input:
+    zweitstimmen_for_party_by_land(DataFrame): By Land Zweitstimmen for the respective party
+    bundestag_seats_for_party(int): Bundestag seats for the respective party
+
+    Output:
+    seats_by_land(DataFrame): Bundestag seats by Land for the respective party:
+    """
+
+    sum_votes = zweitstimmen_for_party_by_land["zweitstimmen"].sum(axis=0)
+    divisor = sum_votes / bundestag_seats_for_party
+    zweitstimmen_for_party_by_land["seats_unrounded"] = (
+        zweitstimmen_for_party_by_land["zweitstimmen"] / divisor
+    )
+    zweitstimmen_for_party_by_land["seats_rounded"] = zweitstimmen_for_party_by_land[
+        "seats_unrounded"
+    ].round(0)
+
+    return zweitstimmen_for_party_by_land["seats_rounded"]
