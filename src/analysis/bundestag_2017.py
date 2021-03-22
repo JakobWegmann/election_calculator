@@ -31,7 +31,9 @@ else:
 # * STEP 1: Calculate initial number of seats for each state.
 population = pd.read_json(f"{path}/bld/data/population_data.json")
 population.set_index(["Bundesland"], inplace=True)
-prelim_divisor = population.sum()[0] / 598
+# ! Only 25% sure what I´m doing
+population = pd.to_numeric(population["Deutsche"])
+prelim_divisor = population.sum() / 598
 initial_seats_by_state, final_divisor = sainte_lague(
     prelim_divisor, population, int(598)
 )
@@ -50,10 +52,6 @@ for bundesland in bundesländer_wahlkreise.keys():
 # * Separating Erst- und Zweitstimmen.
 erststimmen, zweitstimmen = partition_of_votes(data, wahlkreise)
 
-# Calculation of Direktmandate
-# TODO: Delete next line later.
-# erststimmen = pd.read_json(f"{path}/bld/data/erststimmen.json")
-
 # * Calculate Direktmandate.
 erststimmen.set_index(["Partei"], inplace=True)
 
@@ -69,16 +67,14 @@ eligible = eligible_parties(data, direktmandate_by_party)
 # * Calculation of Listenplätze (first round: on Bundesländer level)
 bundesländer = list(bundesländer_wahlkreise.keys())
 
-# TODO: Delete next line later.
-# zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json")
-zweitstimmen.set_index(["Partei"], inplace=True)
-zweitstimmen["sum by party"] = zweitstimmen.sum(axis=1).astype("int")
+zweitstimmen_bundesland = partition_of_votes(data, bundesländer)[1]
+zweitstimmen_bundesland.set_index(["Partei"], inplace=True)
 
-total_available_listenplaetze = 299
+for bundesland in bundesländer_wahlkreise.keys():
+    listenplätze_by_party, final_divisor = election_of_landeslisten_2021(
+        zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
+    )
 
-listenplätze_by_party = election_of_landeslisten_2021(
-    zweitstimmen["sum by party"], total_available_listenplaetze
-)
 listenplätze_by_party.name = "listenplaetze"
 
 # Calculate number of parliamentarians for each party within one Land
@@ -86,6 +82,10 @@ listenplätze_by_party.name = "listenplaetze"
 # listen_und_direktmandate = pd.concat(
 #     [listenplätze_by_party, direktmandate_by_party], axis=1
 # )
+
+zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
+
+
 # listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(axis=1)
 
 # # Calculate number of seats before Ausgleichsmandate
