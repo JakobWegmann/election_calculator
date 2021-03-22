@@ -21,6 +21,9 @@ from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
 from functions_law import sainte_lague
 
+# from functions_law import size_bundestag
+# from functions_law import redistribution_bundestag_seats
+
 if user == "Jakob":
     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
 elif user == "Dominik":
@@ -55,13 +58,21 @@ erststimmen, zweitstimmen = partition_of_votes(data, wahlkreise)
 # * Calculate Direktmandate.
 erststimmen.set_index(["Partei"], inplace=True)
 
-direktmandate = erststimmen.apply(direktmandate)
+direktmandate_wahlkreis = erststimmen.apply(direktmandate)
 
-direktmandate_by_party = direktmandate.sum(axis=1).astype("int").copy()
-direktmandate_by_party.name = "direktmandate"
+direktmandate_bundesland = pd.DataFrame(
+    0, index=erststimmen.index, columns=bundesländer_wahlkreise.keys()
+)
 
-# * Determine parties that are eligible.
-eligible = eligible_parties(data, direktmandate_by_party)
+for bundesland in bundesländer_wahlkreise.keys():
+    direktmandate_bundesland[bundesland] = direktmandate_wahlkreis[
+        bundesländer_wahlkreise[bundesland]
+    ].sum(axis=1)
+
+direktmandate_bundesland.name = "direktmandate"
+
+# Determine parties that are eligible.
+eligible = eligible_parties(data, direktmandate_bundesland.sum(axis=1))
 
 # * STEP 3: Calculate the Mindestsitzzahl for each federal state.
 # * Calculation of Listenplätze (first round: on Bundesländer level)
@@ -70,23 +81,32 @@ bundesländer = list(bundesländer_wahlkreise.keys())
 zweitstimmen_bundesland = partition_of_votes(data, bundesländer)[1]
 zweitstimmen_bundesland.set_index(["Partei"], inplace=True)
 
+# Keep eligible parties
+zweitstimmen_bundesland = zweitstimmen_bundesland.loc[eligible]
+
+listenplätze_bundesland = pd.DataFrame(
+    index=zweitstimmen_bundesland.index, columns=zweitstimmen_bundesland.columns
+)
+
 for bundesland in bundesländer_wahlkreise.keys():
-    listenplätze_by_party, final_divisor = election_of_landeslisten_2021(
+    # Listenplätze
+    listenplätze_bundesland[bundesland] = election_of_landeslisten_2021(
         zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
-    )
+    )[0]
 
-listenplätze_by_party.name = "listenplaetze"
+mindestsitzzahl = pd.DataFrame(index=eligible, columns=bundesländer)
 
-# Calculate number of parliamentarians for each party within one Land
-# (max of Direktmandate und Listenplätze)
-# listen_und_direktmandate = pd.concat(
-#     [listenplätze_by_party, direktmandate_by_party], axis=1
-# )
+temp = list(set(direktmandate_bundesland.index.tolist()) - set(eligible))
+listenplätze_bundesland.loc[temp] = 0
+for bundesland in bundesländer:
+    for partei in eligible:
+        mindestsitzzahl.loc[partei, bundesland] = max(
+            listenplätze_bundesland.loc[partei, bundesland],
+            direktmandate_bundesland.loc[partei, bundesland],
+        )
 
-zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
 
-
-# listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(axis=1)
+# zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
 
 # # Calculate number of seats before Ausgleichsmandate
 
