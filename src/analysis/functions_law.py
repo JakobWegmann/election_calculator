@@ -77,30 +77,8 @@ def eligible_parties(data, direktmandate):
     return eligible_parties
 
 
-def zweitstimmenanteil_by_state(data, bundesländer):
-    """Determine the number of Bundestag seats by party for each federal state.
-
-    Input:
-    data (DataFrame): cleaned data
-    bundesländer (list): list of federal states
-
-    Output:
-    bt_seats_by_state (DataFrame): By party the number of BT seats in each Bundesland
-
-    """
-
-    column_names = ["Partei"] + bundesländer
-    zweitstimmen_by_state = (
-        data[data["Stimme"] == "Zweitstimmen"].loc[:, column_names].copy()
-    )
-    zweitstimmen_by_state.set_index(["Partei"], inplace=True)
-    zweitstimmen_by_state = zweitstimmen_by_state.div(zweitstimmen_by_state.sum(axis=0))
-
-    return zweitstimmen_by_state
-
-
 def core_sainte_lague(preliminary_divisor, data):
-    """ Core of sainte_lague fucntion
+    """Core of sainte_lague fucntion
 
     Input:
     preliminary_divisor (float): Guess for the divisor
@@ -109,7 +87,7 @@ def core_sainte_lague(preliminary_divisor, data):
     Output:
     allocated_seats (DataFrame): number of seats by party, state, etc.
     sum_of_Seats: total number of seats
-    
+
     """
 
     # Jede Landesliste (jedes Bundesland) erhält so viele Sitze, wie sich nach Teilung der Summe
@@ -149,12 +127,11 @@ def sainte_lague(preliminary_divisor, data, total_available_seats):
             preliminary_divisor = preliminary_divisor - 50
         else:
             pass
-        
+
         allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
     else:
         return allocated_seats, preliminary_divisor
-    
- 
+
 
 def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenplaetze):
     """Implementation of Bundeswahlgesetz
