@@ -17,7 +17,7 @@ else:
 
 from functions_law import partition_of_votes
 from functions_law import direktmandate
-from functions_law import zweitstimmen_by_state
+from functions_law import zweitstimmenanteil_by_state
 from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
 
@@ -58,7 +58,8 @@ eligible = eligible_parties(data, direktmandate_by_party)
 
 # * Calculation of Listenplätze (first round: on Bundesländer level)
 bundesländer = list(bundesländer_wahlkreise.keys())
-zweitstimmenanteil_by_state = zweitstimmen_by_state(data, bundesländer)
+# ! Necessary?
+zweitstimmenanteil_by_state = zweitstimmenanteil_by_state(data, bundesländer)
 
 # TODO: Delete next line later.
 # zweitstimmen = pd.read_json(f"{path}/bld/data/zweitstimmen.json")
