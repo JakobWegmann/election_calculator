@@ -137,6 +137,49 @@ bundesländer_wahlkreise.pop("Stimme", None)  # Remove the key 'Stimme'
 with open("../../bld/data/wahlkreis_bundeslaender.pickle", "wb") as handle:
     pickle.dump(bundesländer_wahlkreise, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+# * Get population data.
+data = pd.read_csv(
+    "../original_data/population/bevoelkerung_2016.csv",
+    sep=";",
+    skiprows=5,
+    header=None,
+    error_bad_lines=False,
+    encoding="cp1252",
+)
+
+to_drop = [
+    0,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+]  # by-hand selection; but no problem as format will always be the same
+data.drop(columns=to_drop, inplace=True)
+data.columns = range(data.shape[1])
+
+data.loc[0, 0] = "Bundesland"
+data.loc[0, 1] = "Altersgruppe"
+
+zero_rows = []
+for row in range(0, len(data.index), 1):
+    if data.loc[row, :].isnull().all():
+        zero_rows.append(row)
+    else:
+        pass
+data.drop(index=zero_rows, inplace=True)
+data.columns = data.loc[0, :]
+data.drop(index=[0, 1], inplace=True)
+data.reset_index(drop=True, inplace=True)
+
+data = data[(data == "Insgesamt").any(axis=1)]
+data.drop(columns=["Altersgruppe"], inplace=True)
+data.reset_index(drop=True, inplace=True)
+
+data.to_json("../../bld/data/population_data.json")
 
 # TODO: Delete all of this later. See if something needs to be ported.
 """
