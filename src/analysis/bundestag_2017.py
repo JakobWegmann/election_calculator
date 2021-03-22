@@ -3,7 +3,7 @@ import pickle
 
 import pandas as pd
 
-user = "Jakob"
+user = "Dominik"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
@@ -20,6 +20,7 @@ from functions_law import direktmandate
 from functions_law import zweitstimmenanteil_by_state
 from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
+from functions_law import sainte_lague
 
 if user == "Jakob":
     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
@@ -28,6 +29,12 @@ elif user == "Dominik":
 else:
     print("No such user exists!")
 
+# * STEP 1: Calculate initial number of seats for each state.
+population = pd.read_json(f"{path}/bld/data/population_data.json")
+population.set_index(['Bundesland'], inplace=True)
+initial_seats_by_state, final_divisor = sainte_lague(float(120000), population, int(598))
+
+# * Step 2: Calculate the number of Direktmandate.
 # * Load the data we need. (Left as raw as possible.)
 data = pd.read_json(f"{path}/bld/data/raw_data.json")
 
@@ -56,8 +63,10 @@ direktmandate_by_party.name = "direktmandate"
 # * Determine parties that are eligible.
 eligible = eligible_parties(data, direktmandate_by_party)
 
+# * STEP 3: Calculate the Mindestsitzzahl for each federal state.
 # * Calculation of Listenplätze (first round: on Bundesländer level)
 bundesländer = list(bundesländer_wahlkreise.keys())
+
 # ! Necessary?
 zweitstimmenanteil_by_state = zweitstimmenanteil_by_state(data, bundesländer)
 

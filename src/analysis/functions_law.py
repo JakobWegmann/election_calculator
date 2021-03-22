@@ -96,34 +96,54 @@ def zweitstimmenanteil_by_state(data, bundesländer):
     return zweitstimmen_by_state
 
 
-def sainte_lague(preliminary_divisor, party_votes, total_available_listenplaetze):
-    """Iterative Sainte-Lague procedure
+def core_sainte_lague(preliminary_divisor, data):
+    """ Core of sainte_lague fucntion
 
     Input:
-    preliminary_divisor(float): Guess for the divisor
-    party_votes(DateFrame): votes by party
-    total_available_listenplaetze(int): number of seats in parliament for the
-        respective Bundesland (depends on population, is published)
+    preliminary_divisor (float): Guess for the divisor
+    data (DateFrame): data processed with divisors (e.g. votes by party)
 
     Output:
-    listenplaetze_by_party(DataFrame): seats by party
+    allocated_seats (DataFrame): number of seats by party, state, etc.
+    sum_of_Seats: total number of seats
+    
     """
 
-    # Jede Landesliste erhält so viele Sitze, wie sich nach Teilung der Summe
-    # ihrer erhaltenen Zweitstimmen durch einen Zuteilungsdivisor ergeben.
-    listenplaetze = party_votes.divide(preliminary_divisor).copy()
+    # Jede Landesliste (jedes Bundesland) erhält so viele Sitze, wie sich nach Teilung der Summe
+    # ihrer erhaltenen Zweitstimmen (der Bevölkerung) durch einen Zuteilungsdivisor ergeben.
+    allocated_seats = data.divide(preliminary_divisor).copy()
 
     # "Zahlenbruchteile unter 0,5 werden auf die darunter liegende ganze Zahl abgerundet,
     #  solche über 0,5 werden auf die darüber liegende ganze Zahl aufgerundet. "
-    listenplaetze = listenplaetze.round(0).astype(int)
+    allocated_seats = allocated_seats.round(0).astype(int)
 
     # Calculate sum of listenplaetze after first iteration
-    sum_of_listenplaetze = listenplaetze.sum()
+    sum_of_seats = allocated_seats.sum()[0]
 
-    if sum_of_listenplaetze > total_available_listenplaetze:
-        sainte_lague(preliminary_divisor + 0.01, party_votes)
+    return allocated_seats, sum_of_seats
+
+
+def sainte_lague(preliminary_divisor, data, total_available_seats):
+    """Iterative Sainte-Lague procedure which applies core_sainte_lague
+
+    Input:
+    preliminary_divisor (float): Guess for the divisor
+    data (DateFrame): data processed with divisors (e.g. votes by party)
+    total_available_seats (int): number of seats in parliament for the
+        respective Bundesland, Germany, etc.
+
+    Output:
+    allocated_seats (DataFrame): seats by party, state, etc.
+
+    """
+
+    allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
+
+    while sum_of_seats > total_available_seats:
+        preliminary_divisor = preliminary_divisor + 50
+        allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
     else:
-        return listenplaetze
+        return allocated_seats, preliminary_divisor
 
 
 def election_of_landeslisten_2021(zweitstimmen_by_party, total_available_listenplaetze):
