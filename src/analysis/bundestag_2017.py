@@ -80,6 +80,7 @@ listen_und_direktmandate = pd.concat(
 )
 listen_und_direktmandate["minimum_num_member"] = listen_und_direktmandate.max(axis=1)
 
+# Aggregate
 
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
