@@ -21,7 +21,8 @@ from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
 from functions_law import sainte_lague
 
-# from functions_law import size_bundestag
+from functions_law import size_bundestag
+
 # from functions_law import redistribution_bundestag_seats
 
 if user == "Jakob":
@@ -106,13 +107,10 @@ for bundesland in bundesländer:
         )
 
 
-# zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
-
 # # Calculate number of seats before Ausgleichsmandate
+zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
 
-# bundestag_seats_by_party = size_bundestag(
-#     zweitstimmen_by_party_total, minimum_members_by_land_and_party
-# )
+bundestag_seats_by_party = size_bundestag(zweitstimmen_bundesgebiet, mindestsitzzahl)
 
 # Ausgleichsmandate
 

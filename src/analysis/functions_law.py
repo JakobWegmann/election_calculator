@@ -179,6 +179,11 @@ def size_bundestag(zweitstimmen_by_party_total, minimum_members_by_land_and_part
     bundestag_seats_by_party(DataFrame):
     """
 
+    # Calculate divisor for each party
+    # pick mimimum divisor
+    # calculate seats (unrounded)
+    # then round
+
     minimum_members_by_land_and_party[
         "sum_seats"
     ] = minimum_members_by_land_and_party.sum(axis=1)
