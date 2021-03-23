@@ -134,7 +134,7 @@ def sainte_lague(preliminary_divisor, data, total_available_seats):
         return allocated_seats, preliminary_divisor
 
 
-def election_of_landeslisten_2021(zweitstimmen_by_party, initial_seats_by_state):
+def allocation_seats_after2013(zweitstimmen_by_party, initial_seats_by_state):
     """Implementation of Bundeswahlgesetz
     § 6 Wahl nach Landeslisten (2021) Absatz 1 und 2,
     Heft 3. Endgültige Ergebnisse nach Wahlkreisen (2017) p. 398
