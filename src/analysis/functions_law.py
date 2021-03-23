@@ -127,6 +127,9 @@ def sainte_lague(preliminary_divisor, data, total_available_seats):
         else:
             pass
 
+        print("Sum of seats:", sum_of_seats)
+        print("Total available seats:", total_available_seats)
+        print("Divisor:", preliminary_divisor)
         allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
     else:
         return allocated_seats, preliminary_divisor
@@ -154,6 +157,7 @@ def election_of_landeslisten_2021(zweitstimmen_by_party, initial_seats_by_state)
     #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
     #   verbleibenden Sitze geteilt.
 
+    print("Max num seats input", initial_seats_by_state)
     preliminary_divisor = zweitstimmen_by_party.sum() / initial_seats_by_state
     landesliste_before_ausgleichsmandate, final_divisor = sainte_lague(
         preliminary_divisor, zweitstimmen_by_party, initial_seats_by_state
@@ -163,7 +167,7 @@ def election_of_landeslisten_2021(zweitstimmen_by_party, initial_seats_by_state)
     #   ist der Zuteilungsdivisor so HERAUFZUSETZEN, dass sich bei der Berechnung
     #   die zu vergebende Sitzzahl ergibt; entfallen zu wenig Sitze auf die Landeslisten,
     #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
-
+    print(final_divisor)
     return landesliste_before_ausgleichsmandate, final_divisor
 
 

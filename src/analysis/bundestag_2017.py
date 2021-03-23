@@ -70,15 +70,14 @@ for bundesland in bundesländer_wahlkreise.keys():
         bundesländer_wahlkreise[bundesland]
     ].sum(axis=1)
 
-direktmandate_bundesland.name = "direktmandate"
+
+# * STEP 3: Calculate the Mindestsitzzahl for each federal state.
+# * Calculation of Listenplätze (first round: on Bundesländer level)
 
 # Determine parties that are eligible.
 eligible = eligible_parties(data, direktmandate_bundesland.sum(axis=1))
 
-# * STEP 3: Calculate the Mindestsitzzahl for each federal state.
-# * Calculation of Listenplätze (first round: on Bundesländer level)
 bundesländer = list(bundesländer_wahlkreise.keys())
-
 zweitstimmen_bundesland = partition_of_votes(data, bundesländer)[1]
 zweitstimmen_bundesland.set_index(["Partei"], inplace=True)
 
@@ -95,10 +94,10 @@ for bundesland in bundesländer_wahlkreise.keys():
         zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
     )[0]
 
-mindestsitzzahl = pd.DataFrame(index=eligible, columns=bundesländer)
-
 
 # * Calculate number of seats before Ausgleichsmandate
+
+mindestsitzzahl = pd.DataFrame(index=eligible, columns=bundesländer)
 
 # temp = list(set(direktmandate_bundesland.index.tolist()) - set(eligible))
 # listenplätze_bundesland.loc[temp] = 0
@@ -111,11 +110,12 @@ for bundesland in bundesländer:
 mindestsitzzahl.index.rename("Partei", inplace=True)
 mindestsitzzahl["sum_sitze"] = mindestsitzzahl.sum(axis=1)
 
-# * Ausgleichsmandate
+# * Number of Ausgleichsmandate (eventual size of Bundestag)
 zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
 zweitstimmen_bundesgebiet.set_index(["Partei"], inplace=True)
 zweitstimmen_bundesgebiet.columns = ["Zweitstimmen"]
-
+# Keep eligible parties
+zweitstimmen_bundesgebiet = zweitstimmen_bundesgebiet.loc[eligible]
 
 bundestag_seats_by_party = zweitstimmen_bundesgebiet.join(mindestsitzzahl)
 bundestag_seats_by_party["divisor"] = (
@@ -138,6 +138,7 @@ bundestagssitze_bundesland = pd.DataFrame(
 )
 
 for partei in zweitstimmen_bundesland_t.keys():
+    print(partei)
     # Bundestagssitze by Land
     bundestagssitze_bundesland[partei] = election_of_landeslisten_2021(
         zweitstimmen_bundesland_t[partei],
