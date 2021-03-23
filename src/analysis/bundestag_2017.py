@@ -21,7 +21,7 @@ from functions_law import election_of_landeslisten_2021
 from functions_law import eligible_parties
 from functions_law import sainte_lague
 
-from functions_law import size_bundestag
+# from functions_law import size_bundestag
 
 # from functions_law import redistribution_bundestag_seats
 
@@ -97,6 +97,9 @@ for bundesland in bundesländer_wahlkreise.keys():
 
 mindestsitzzahl = pd.DataFrame(index=eligible, columns=bundesländer)
 
+
+# * Calculate number of seats before Ausgleichsmandate
+
 # temp = list(set(direktmandate_bundesland.index.tolist()) - set(eligible))
 # listenplätze_bundesland.loc[temp] = 0
 for bundesland in bundesländer:
@@ -106,16 +109,40 @@ for bundesland in bundesländer:
             direktmandate_bundesland.loc[partei, bundesland],
         )
 mindestsitzzahl.index.rename("Partei", inplace=True)
+mindestsitzzahl["sum_sitze"] = mindestsitzzahl.sum(axis=1)
 
-# # Calculate number of seats before Ausgleichsmandate
+# * Ausgleichsmandate
 zweitstimmen_bundesgebiet = partition_of_votes(data, ["Bundesgebiet"])[1]
 zweitstimmen_bundesgebiet.set_index(["Partei"], inplace=True)
+zweitstimmen_bundesgebiet.columns = ["Zweitstimmen"]
 
-bundestag_seats_by_party = size_bundestag(zweitstimmen_bundesgebiet, mindestsitzzahl)
 
-bundestag_seats = pd.concat([zweitstimmen_bundesgebiet, mindestsitzzahl])
+bundestag_seats_by_party = zweitstimmen_bundesgebiet.join(mindestsitzzahl)
+bundestag_seats_by_party["divisor"] = (
+    bundestag_seats_by_party["Zweitstimmen"] / bundestag_seats_by_party["sum_sitze"]
+)
+min_divisor = bundestag_seats_by_party["divisor"].min()
+bundestag_seats_by_party["seats_unrounded"] = (
+    bundestag_seats_by_party["Zweitstimmen"] / min_divisor
+)
+bundestag_seats_by_party["seats_rounded"] = bundestag_seats_by_party[
+    "seats_unrounded"
+].round(0)
 
-# Ausgleichsmandate
+# * Redistribution of additional seats to Länder
+
+zweitstimmen_bundesland_t = zweitstimmen_bundesland.T
+
+bundestagssitze_bundesland = pd.DataFrame(
+    index=zweitstimmen_bundesland_t.index, columns=zweitstimmen_bundesland_t.columns
+)
+
+for partei in zweitstimmen_bundesland_t.keys():
+    # Bundestagssitze by Land
+    bundestagssitze_bundesland[partei] = election_of_landeslisten_2021(
+        zweitstimmen_bundesland_t[partei],
+        bundestag_seats_by_party.loc[partei, "seats_rounded"],
+    )[0]
 
 
 # offene Baustellen:
