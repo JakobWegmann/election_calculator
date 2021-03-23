@@ -7,7 +7,6 @@ Calculation follows
 Heft 3. Endgültige Ergebnisse nach Wahlkreisen
 
 """
-import pandas as pd
 
 
 def partition_of_votes(raw_data, wahlkreise):
@@ -169,69 +168,3 @@ def election_of_landeslisten_2021(zweitstimmen_by_party, initial_seats_by_state)
     #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
     print(final_divisor)
     return landesliste_before_ausgleichsmandate, final_divisor
-
-
-def size_bundestag(zweitstimmen_by_party_total, minimum_members_by_land_and_party):
-    """Following Heft 3. Endgültige Ergebnisse nach Wahlkreisen (2017) p.414
-
-    Input:
-    zweitstimmen_by_party_total(DataFrame): By party Zweitstimmen (Bundesrepublik)
-    minimum_members_by_land_and_party(DataFrame): By party and Land
-        number of minimum seats
-
-    Output:
-    bundestag_seats_by_party(DataFrame):
-    """
-
-    # Calculate divisor for each party
-    # pick mimimum divisor
-    # calculate seats (unrounded)
-    # then round
-
-    minimum_members_by_land_and_party[
-        "sum_seats"
-    ] = minimum_members_by_land_and_party.sum(axis=1)
-    minimum_members_by_land_and_party["sum_seats_min_0_5"] = (
-        minimum_members_by_land_and_party["sum_seats"] - 0.5
-    )
-    bundestag_seats_by_party = pd.concat(
-        minimum_members_by_land_and_party["sum_seats_min_0_5"],
-        zweitstimmen_by_party_total,
-        axis=1,
-    )
-    bundestag_seats_by_party["divisor"] = (
-        bundestag_seats_by_party["zweitstimmen"] / bundestag_seats_by_party["sum_seats"]
-    )
-    min_divisor = bundestag_seats_by_party["divisor"].min()
-    bundestag_seats_by_party["seats_unrounded"] = (
-        bundestag_seats_by_party["zweitstimmen"] / min_divisor
-    )
-    bundestag_seats_by_party["seats_rounded"] = bundestag_seats_by_party[
-        "seats_unrounded"
-    ].round(0)
-    return bundestag_seats_by_party["seats_rounded"]
-
-
-def redistribution_bundestag_seats(
-    zweitstimmen_for_party_by_land, bundestag_seats_for_party
-):
-    """Following Heft 3. Endgültige Ergebnisse nach Wahlkreisen (2017) p.415 ff.
-
-    Input:
-    zweitstimmen_for_party_by_land(DataFrame): By Land Zweitstimmen for the respective party
-    bundestag_seats_for_party(int): Bundestag seats for the respective party
-
-    Output:
-    seats_by_land(DataFrame): Bundestag seats by Land for the respective party:
-    """
-
-    sum_votes = zweitstimmen_for_party_by_land["zweitstimmen"].sum(axis=0)
-    divisor = sum_votes / bundestag_seats_for_party
-    zweitstimmen_for_party_by_land["seats_unrounded"] = (
-        zweitstimmen_for_party_by_land["zweitstimmen"] / divisor
-    )
-    zweitstimmen_for_party_by_land["seats_rounded"] = zweitstimmen_for_party_by_land[
-        "seats_unrounded"
-    ].round(0)
-
-    return zweitstimmen_for_party_by_land["seats_rounded"]
