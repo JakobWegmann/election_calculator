@@ -96,7 +96,7 @@ for bundesland in bundesländer_wahlkreise.keys():
     # Listenplätze
     listenplätze_bundesland[bundesland] = allocation_seats_after2013(
         zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
-    )[0]
+    )
 
 
 # * Calculate number of seats before Ausgleichsmandate
@@ -147,7 +147,7 @@ for partei in zweitstimmen_bundesland_t.keys():
     bundestagssitze_bundesland[partei] = allocation_seats_after2013(
         zweitstimmen_bundesland_t[partei],
         bundestag_seats_by_party.loc[partei, "seats_rounded"],
-    )[0]
+    )
 
 
 # offene Baustellen:

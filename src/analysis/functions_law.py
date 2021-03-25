@@ -167,4 +167,4 @@ def allocation_seats_after2013(zweitstimmen_by_party, initial_seats_by_state):
     #   die zu vergebende Sitzzahl ergibt; entfallen zu wenig Sitze auf die Landeslisten,
     #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
     print(final_divisor)
-    return landesliste_before_ausgleichsmandate, final_divisor
+    return landesliste_before_ausgleichsmandate
