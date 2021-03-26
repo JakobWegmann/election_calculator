@@ -3,7 +3,7 @@ import pickle
 
 import pandas as pd
 
-user = "Jakob"
+user = "Dominik"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
@@ -19,6 +19,7 @@ from functions_law import partition_of_votes
 from functions_law import direktmandate
 from functions_law import allocation_seats_after2013
 from functions_law import eligible_parties
+from functions_law import last_allocation_seats
 
 # from functions_law import sainte_lague
 
@@ -142,12 +143,16 @@ bundestagssitze_bundesland = pd.DataFrame(
     index=zweitstimmen_bundesland_t.index, columns=zweitstimmen_bundesland_t.columns
 )
 
+direktmandate_bundesland_t = direktmandate_bundesland.T
+direktmandate_bundesland_t = direktmandate_bundesland_t[eligible]
+
 for partei in zweitstimmen_bundesland_t.keys():
     print(partei)
     # Bundestagssitze by Land
-    bundestagssitze_bundesland[partei] = allocation_seats_after2013(
+    bundestagssitze_bundesland[partei] = last_allocation_seats(
         zweitstimmen_bundesland_t[partei],
         bundestag_seats_by_party.loc[partei, "seats_rounded"],
+        direktmandate_bundesland_t[partei],
     )
 
 

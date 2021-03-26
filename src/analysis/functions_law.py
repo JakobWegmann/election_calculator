@@ -7,7 +7,7 @@ Calculation follows
 Heft 3. Endgültige Ergebnisse nach Wahlkreisen
 
 """
-
+import pandas as pd
 
 def partition_of_votes(raw_data, wahlkreise):
     """Partition the raw data into "Erststimmen" und "Zweitstimmen".
@@ -200,6 +200,86 @@ def allocation_seats_after2013(zweitstimmen_by_party, initial_seats_by_state):
     preliminary_divisor = zweitstimmen_by_party.sum() / initial_seats_by_state
     landesliste_before_ausgleichsmandate = sainte_lague_new(
         preliminary_divisor, zweitstimmen_by_party, initial_seats_by_state
+    )
+
+    # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
+    #   ist der Zuteilungsdivisor so HERAUFZUSETZEN, dass sich bei der Berechnung
+    #   die zu vergebende Sitzzahl ergibt; entfallen zu wenig Sitze auf die Landeslisten,
+    #   ist der Zuteilungsdivisor entsprechend herunterzusetzen.
+    return landesliste_before_ausgleichsmandate
+
+
+def sainte_lague_last(preliminary_divisor, data, total_available_seats, direktmandate):
+    """Iterative Sainte-Lague procedure which applies core_sainte_lague
+
+    Input:
+    preliminary_divisor (float): Guess for the divisor
+    data (DateFrame): data processed with divisors (e.g. votes by party)
+    total_available_seats (int): number of seats in parliament for the
+        respective Bundesland, Germany, etc.
+    direktmandate (DataFrame): number of Direktmandate by Bundesland
+
+    Output:
+    allocated_seats (DataFrame): seats by party, state, etc.
+
+    """
+
+    # Jede Landesliste (jedes Bundesland) erhält so viele Sitze, wie sich nach Teilung der Summe
+    # ihrer erhaltenen Zweitstimmen (der Bevölkerung) durch einen Zuteilungsdivisor ergeben.
+    prel_allocated_seats = data.divide(preliminary_divisor).copy()
+
+    # "Zahlenbruchteile unter 0,5 werden auf die darunter liegende ganze Zahl abgerundet,
+    #  solche über 0,5 werden auf die darüber liegende ganze Zahl aufgerundet. "
+    prel_allocated_seats = prel_allocated_seats.round(0).astype(int)
+    allocated_seats = pd.concat([prel_allocated_seats, direktmandate]).max(level=0)
+
+    # Calculate sum of listenplaetze after first iteration
+    sum_of_seats = allocated_seats.sum()
+
+    if sum_of_seats != total_available_seats:
+        if sum_of_seats > total_available_seats:
+            preliminary_divisor = preliminary_divisor + 50
+        elif sum_of_seats < total_available_seats:
+            preliminary_divisor = preliminary_divisor - 50
+        allocated_seats = sainte_lague_last(
+            preliminary_divisor, data, total_available_seats, direktmandate,
+        )
+
+        print("Sum of seats:", sum_of_seats)
+        print("Total available seats:", total_available_seats)
+        print("Divisor:", preliminary_divisor)
+
+    return allocated_seats
+
+
+def last_allocation_seats(zweitstimmen_by_party, initial_seats_by_state, direktmandate):
+    """Implementation of Bundeswahlgesetz
+    § 6 Wahl nach Landeslisten (2021) Absatz 1 und 2,
+    Heft 3. Endgültige Ergebnisse nach Wahlkreisen (2017) p. 398
+    describes the procedure a bit different
+
+    Input:
+    zweitstimmen_by_party(DataFrame): Zweitstimmen by party
+    initial_seats_by_state(int): number of seats in parliament for the
+        respective Bundesland (depends on population, is published)
+    direktmandate (DataFrame): number of Direktmandate by Bundesland
+    
+
+    Output:
+    parliamentarians_before_ausgleichsmandate(DataFrame):
+    """
+
+    # Use Sainte-Lague Zuteilungsdivisor to calculate seats by party
+    #   Der Zuteilungsdivisor ist so zu bestimmen, dass insgesamt so viele
+    #   Sitze auf die Landeslisten entfallen, wie Sitze zu vergeben sind.
+    #   Dazu wird zunächst die Gesamtzahl der Zweitstimmen aller zu berücksichtigenden
+    #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
+    #   verbleibenden Sitze geteilt.
+
+    print("Max num seats input", initial_seats_by_state)
+    preliminary_divisor = zweitstimmen_by_party.sum() / initial_seats_by_state
+    landesliste_before_ausgleichsmandate = sainte_lague_last(
+        preliminary_divisor, zweitstimmen_by_party, initial_seats_by_state, direktmandate,
     )
 
     # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
