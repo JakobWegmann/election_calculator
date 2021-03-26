@@ -94,6 +94,7 @@ listenplätze_bundesland = pd.DataFrame(
 
 for bundesland in bundesländer_wahlkreise.keys():
     # Listenplätze
+    print("Bundsland:", bundesland)
     listenplätze_bundesland[bundesland] = allocation_seats_after2013(
         zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
     )
