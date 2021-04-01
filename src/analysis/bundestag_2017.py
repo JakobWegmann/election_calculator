@@ -1,9 +1,10 @@
+import math
 import os
 import pickle
 
 import pandas as pd
 
-user = "Dominik"
+user = "Jakob"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
@@ -155,6 +156,51 @@ for partei in zweitstimmen_bundesland_t.keys():
         direktmandate_bundesland_t[partei],
     )
 
+# * Possible coalitions
+
+coalitions = {
+    "groko": [
+        "Christlich Demokratische Union Deutschlands",
+        "Christlich-Soziale Union in Bayern e.V.",
+        "Sozialdemokratische Partei Deutschlands",
+    ],
+    "rot_grün": ["Sozialdemokratische Partei Deutschlands", "BÜNDNIS 90/DIE GRÜNEN"],
+    "ampel": [
+        "Sozialdemokratische Partei Deutschlands",
+        "BÜNDNIS 90/DIE GRÜNEN",
+        "Freie Demokratische Partei",
+    ],
+    "rot_rot_grün": [
+        "Sozialdemokratische Partei Deutschlands",
+        "BÜNDNIS 90/DIE GRÜNEN",
+        "DIE LINKE",
+    ],
+    "schwarz_gelb": [
+        "Christlich Demokratische Union Deutschlands",
+        "Christlich-Soziale Union in Bayern e.V.",
+        "Freie Demokratische Partei",
+    ],
+}
+
+possible_coalition = pd.DataFrame(
+    coalitions,
+    index=coalitions.keys(),
+    columns=["possible coalition", "sum_seats", "margin"],
+)
+
+for posble_coalitions in coalitions.keys():
+    sum_seats_coalition = 0
+    for partei in coalitions[posble_coalitions]:
+        sum_seats_coalition = (
+            sum_seats_coalition + bundestag_seats_by_party.loc[partei, "seats_rounded"]
+        )
+    possible_coalition.loc[posble_coalitions, "sum_seats"] = sum_seats_coalition
+
+necc_votes_maj = math.ceil(bundestag_seats_by_party["seats_rounded"].sum() / 2)
+possible_coalition["margin"] = possible_coalition["sum_seats"] - necc_votes_maj
+possible_coalition["possible coalition"] = possible_coalition["margin"].apply(
+    lambda x: "possible" if x >= 0 else "not possible"
+)
 
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)

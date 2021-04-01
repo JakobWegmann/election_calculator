@@ -9,6 +9,7 @@ Heft 3. Endgültige Ergebnisse nach Wahlkreisen
 """
 import pandas as pd
 
+
 def partition_of_votes(raw_data, wahlkreise):
     """Partition the raw data into "Erststimmen" und "Zweitstimmen".
 
@@ -162,13 +163,7 @@ def sainte_lague_new(preliminary_divisor, data, available_seats):
             preliminary_divisor = preliminary_divisor + 50
         elif sum_of_seats < available_seats:
             preliminary_divisor = preliminary_divisor - 50
-        allocated_seats = sainte_lague_new(
-            preliminary_divisor, data, available_seats
-        )
-
-        print("Sum of seats:", sum_of_seats)
-        print("Total available seats:", available_seats)
-        print("Divisor:", preliminary_divisor)
+        allocated_seats = sainte_lague_new(preliminary_divisor, data, available_seats)
 
     return allocated_seats
 
@@ -239,12 +234,11 @@ def sainte_lague_last(preliminary_divisor, data, available_seats, direktmandate)
         elif sum_of_seats < available_seats:
             preliminary_divisor = preliminary_divisor - 50
         allocated_seats = sainte_lague_last(
-            preliminary_divisor, data, available_seats, direktmandate,
+            preliminary_divisor,
+            data,
+            available_seats,
+            direktmandate,
         )
-
-        print("Sum of seats:", sum_of_seats)
-        print("Total available seats:", available_seats)
-        print("Divisor:", preliminary_divisor)
 
     return allocated_seats
 
@@ -260,7 +254,7 @@ def last_allocation_seats(zweitstimmen_by_party, initial_seats_by_state, direktm
     initial_seats_by_state (int): number of seats in parliament for the
         respective Bundesland (depends on population, is published)
     direktmandate (pd.DataFrame): number of Direktmandate by Bundesland
-    
+
 
     Output:
     allocation_of_seats (pd.DataFrame):
@@ -276,7 +270,10 @@ def last_allocation_seats(zweitstimmen_by_party, initial_seats_by_state, direktm
     print("Max num seats input", initial_seats_by_state)
     preliminary_divisor = zweitstimmen_by_party.sum() / initial_seats_by_state
     allocation_of_seats = sainte_lague_last(
-        preliminary_divisor, zweitstimmen_by_party, initial_seats_by_state, direktmandate,
+        preliminary_divisor,
+        zweitstimmen_by_party,
+        initial_seats_by_state,
+        direktmandate,
     )
 
     # Entfallen danach mehr Sitze auf die Landeslisten, als Sitze zu vergeben sind,
