@@ -40,7 +40,7 @@ data = pd.read_csv(
     skiprows=5,
     header=None,
     error_bad_lines=False,
-    encoding="latin1",
+    # encoding="latin1",
 )
 data
 
