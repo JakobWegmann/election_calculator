@@ -35,11 +35,12 @@ else:
 # )
 
 data = pd.read_csv(
-    "../original_data/election_results/btw2017_kerg.csv",
+    "../original_data/election_results/btw2013_kerg.csv",
     sep=";",
     skiprows=5,
     header=None,
     error_bad_lines=False,
+    encoding="ISO-8859-1",
 )
 
 
