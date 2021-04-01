@@ -112,17 +112,18 @@ zweitstimmen_bundesgebiet.columns = ["Zweitstimmen"]
 # Keep eligible parties
 zweitstimmen_bundesgebiet = zweitstimmen_bundesgebiet.loc[eligible]
 
-bundestag_seats_by_party = zweitstimmen_bundesgebiet.join(mindestsitzzahl)
-bundestag_seats_by_party["divisor"] = (
-    bundestag_seats_by_party["Zweitstimmen"] / bundestag_seats_by_party["sum_sitze"]
+bundestag_seats_bef_ausgleichsmdte = zweitstimmen_bundesgebiet.join(mindestsitzzahl)
+bundestag_seats_bef_ausgleichsmdte["divisor"] = (
+    bundestag_seats_bef_ausgleichsmdte["Zweitstimmen"]
+    / bundestag_seats_bef_ausgleichsmdte["sum_sitze"]
 )
-min_divisor = bundestag_seats_by_party["divisor"].min()
-bundestag_seats_by_party["seats_unrounded"] = (
-    bundestag_seats_by_party["Zweitstimmen"] / min_divisor
+min_divisor = bundestag_seats_bef_ausgleichsmdte["divisor"].min()
+bundestag_seats_bef_ausgleichsmdte["seats_unrounded"] = (
+    bundestag_seats_bef_ausgleichsmdte["Zweitstimmen"] / min_divisor
 )
-bundestag_seats_by_party["seats_rounded"] = bundestag_seats_by_party[
-    "seats_unrounded"
-].round(0)
+bundestag_seats_bef_ausgleichsmdte[
+    "seats_rounded"
+] = bundestag_seats_bef_ausgleichsmdte["seats_unrounded"].round(0)
 
 # * Redistribution of additional seats to Länder
 
@@ -140,9 +141,35 @@ for partei in zweitstimmen_bundesland_t.keys():
     # Bundestagssitze by Land
     bundestagssitze_bundesland[partei] = last_allocation_seats(
         zweitstimmen_bundesland_t[partei],
-        bundestag_seats_by_party.loc[partei, "seats_rounded"],
+        bundestag_seats_bef_ausgleichsmdte.loc[partei, "seats_rounded"],
         direktmandate_bundesland_t[partei],
     )
+
+# * Determine number of Ausgleichs- und Überhangmandate by party and Bundesland
+
+ausgleich_and_überhang = pd.DataFrame(
+    index=zweitstimmen_bundesland_t.index,
+    columns=pd.MultiIndex.from_product(
+        [zweitstimmen_bundesland_t.columns.tolist(), ["Sum", "Überhang", "Ausgleich"]]
+    ),
+)
+
+ausgleich_and_überhang.loc["Hamburg", ("CDU", "Sum")] = 1
+
+for bundesland in bundestagssitze_bundesland.index.tolist():
+    for partei in zweitstimmen_bundesland_t.columns:
+        ausgleich_and_überhang.loc[
+            bundesland, (partei, "Sum")
+        ] = bundestagssitze_bundesland.loc[bundesland, partei]
+        ausgleich_and_überhang.loc[bundesland, (partei, "Ausgleich")] = (
+            ausgleich_and_überhang.loc[bundesland, (partei, "Sum")]
+            - bundestag_seats_bef_ausgleichsmdte.loc[partei, bundesland]
+        )
+        ausgleich_and_überhang.loc[bundesland, (partei, "Überhang")] = max(
+            0,
+            direktmandate_bundesland.loc[partei, bundesland]
+            - listenplätze_bundesland.loc[partei, bundesland],
+        )
 
 # * Possible coalitions
 
@@ -186,11 +213,14 @@ for posble_coalitions in coalitions.keys():
     sum_seats_coalition = 0
     for partei in coalitions[posble_coalitions]:
         sum_seats_coalition = (
-            sum_seats_coalition + bundestag_seats_by_party.loc[partei, "seats_rounded"]
+            sum_seats_coalition
+            + bundestag_seats_bef_ausgleichsmdte.loc[partei, "seats_rounded"]
         )
     possible_coalition.loc[posble_coalitions, "sum_seats"] = sum_seats_coalition
 
-necc_votes_maj = math.ceil(bundestag_seats_by_party["seats_rounded"].sum() / 2)
+necc_votes_maj = math.ceil(
+    bundestag_seats_bef_ausgleichsmdte["seats_rounded"].sum() / 2
+)
 possible_coalition["margin"] = possible_coalition["sum_seats"] - necc_votes_maj
 possible_coalition["possible coalition"] = possible_coalition["margin"].apply(
     lambda x: "possible" if x >= 0 else "not possible"
