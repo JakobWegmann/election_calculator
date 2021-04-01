@@ -180,6 +180,12 @@ coalitions = {
         "Christlich-Soziale Union in Bayern e.V.",
         "Freie Demokratische Partei",
     ],
+    "Jamaika": [
+        "Christlich Demokratische Union Deutschlands",
+        "Christlich-Soziale Union in Bayern e.V.",
+        "BÜNDNIS 90/DIE GRÜNEN",
+        "Freie Demokratische Partei",
+    ],
 }
 
 possible_coalition = pd.DataFrame(
