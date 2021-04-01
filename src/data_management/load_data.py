@@ -35,14 +35,14 @@ else:
 # )
 
 data = pd.read_csv(
-    "../original_data/election_results/btw2013_kerg.csv",
+    "../original_data/election_results/btw2017_kerg.csv",
     sep=";",
     skiprows=5,
     header=None,
     error_bad_lines=False,
-    encoding="ISO-8859-1",
+    encoding="latin1",
 )
-
+data
 
 # * Delete unnecessary columns in two steps.
 delete = ["Nr", "gehört zu", "Vorperiode"]
@@ -104,10 +104,6 @@ parteien = {
 
 for partei in parteien.keys():
     data = data.replace(partei, parteien[partei])
-
-data.rename(
-    index={"Christlich Demokratische Union Deutschlands": "CDU"}, inplace="True"
-)
 
 data.to_json("../../bld/data/raw_data.json")
 
