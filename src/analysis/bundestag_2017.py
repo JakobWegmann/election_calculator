@@ -160,31 +160,31 @@ for partei in zweitstimmen_bundesland_t.keys():
 
 coalitions = {
     "groko": [
-        "Christlich Demokratische Union Deutschlands",
-        "Christlich-Soziale Union in Bayern e.V.",
-        "Sozialdemokratische Partei Deutschlands",
+        "CDU",
+        "CSU",
+        "SPD",
     ],
-    "rot_grün": ["Sozialdemokratische Partei Deutschlands", "BÜNDNIS 90/DIE GRÜNEN"],
+    "rot_grün": ["SPD", "Grüne"],
     "ampel": [
-        "Sozialdemokratische Partei Deutschlands",
-        "BÜNDNIS 90/DIE GRÜNEN",
-        "Freie Demokratische Partei",
+        "SPD",
+        "Grüne",
+        "FDP",
     ],
     "rot_rot_grün": [
-        "Sozialdemokratische Partei Deutschlands",
-        "BÜNDNIS 90/DIE GRÜNEN",
+        "SPD",
+        "Grüne",
         "DIE LINKE",
     ],
     "schwarz_gelb": [
-        "Christlich Demokratische Union Deutschlands",
-        "Christlich-Soziale Union in Bayern e.V.",
-        "Freie Demokratische Partei",
+        "CDU",
+        "CSU",
+        "FDP",
     ],
     "Jamaika": [
-        "Christlich Demokratische Union Deutschlands",
-        "Christlich-Soziale Union in Bayern e.V.",
-        "BÜNDNIS 90/DIE GRÜNEN",
-        "Freie Demokratische Partei",
+        "CDU",
+        "CSU",
+        "Grüne",
+        "FDP",
     ],
 }
 

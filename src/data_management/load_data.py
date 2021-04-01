@@ -92,6 +92,22 @@ data.reset_index(drop=True, inplace=True)
 data.rename(columns={"Gebiet": "Partei", np.nan: "Stimme"}, inplace=True)
 data.fillna(0, inplace=True)
 
+parteien = {
+    "Christlich Demokratische Union Deutschlands": "CDU",
+    "Sozialdemokratische Partei Deutschlands": "SPD",
+    "Christlich-Soziale Union in Bayern e.V.": "CSU",
+    "BÜNDNIS 90/DIE GRÜNEN": "Grüne",
+    "Freie Demokratische Partei": "FDP",
+    "Alternative für Deutschland": "AfD",
+}
+
+for partei in parteien.keys():
+    data = data.replace(partei, parteien[partei])
+
+data.rename(
+    index={"Christlich Demokratische Union Deutschlands": "CDU"}, inplace="True"
+)
+
 data.to_json("../../bld/data/raw_data.json")
 
 # * Get a list of all parties.
