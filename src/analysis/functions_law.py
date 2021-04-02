@@ -55,7 +55,7 @@ def eligible_parties(zweitstimmen_bundesgebiet, direktmandate):
     """Determine which parties reach the Bundestag in a federal state.
 
     Input:
-    bundesgebiet (DataFrame): votes by party bundesgebiet
+    zweitstimmen_bundesgebiet (DataFrame): votes by party bundesgebiet
     direktmandate (DataFrame): By party the number of Direktmandate
 
     Output:
