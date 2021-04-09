@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-user = "Jakob"
+user = "Dominik"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/data_management/")
@@ -193,6 +193,17 @@ data.drop(columns=["Altersgruppe"], inplace=True)
 data.reset_index(drop=True, inplace=True)
 
 data.to_json("../../bld/data/population_data.json")
+
+# * Get Bewerber data.
+data = pd.read_csv(
+    "../original_data/candidates/btw2017bewerb_gewaehlt.csv",
+    sep=";",
+    skiprows=7,
+    header=0,
+    error_bad_lines=False,
+    encoding="cp1252",
+)
+
 
 # TODO: Delete all of this later. See if something needs to be ported.
 """
