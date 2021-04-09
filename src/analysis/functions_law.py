@@ -355,11 +355,12 @@ def bundestagswahl_2013_2017(
     mindestsitzzahl["sum_sitze"] = mindestsitzzahl.sum(axis=1)
 
     # * Number of Ausgleichsmandate (definite size of Bundestag)
-    zweitstimmen_bundesgebiet.columns = ["Zweitstimmen"]
+    zweitstimmen_bundesgebiet_cp = zweitstimmen_bundesgebiet.copy()
+    zweitstimmen_bundesgebiet_cp.columns = ["Zweitstimmen"]
     # Keep eligible parties
-    zweitstimmen_bundesgebiet = zweitstimmen_bundesgebiet.loc[eligible]
+    zweitstimmen_bundesgebiet_cp = zweitstimmen_bundesgebiet_cp.loc[eligible]
 
-    bundestag_seats_bef_ausgleichsmdte = zweitstimmen_bundesgebiet.join(mindestsitzzahl)
+    bundestag_seats_bef_ausgleichsmdte = zweitstimmen_bundesgebiet_cp.join(mindestsitzzahl)
     bundestag_seats_bef_ausgleichsmdte["divisor"] = (
         bundestag_seats_bef_ausgleichsmdte["Zweitstimmen"]
         / bundestag_seats_bef_ausgleichsmdte["sum_sitze"]

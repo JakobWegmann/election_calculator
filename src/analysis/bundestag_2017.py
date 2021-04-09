@@ -3,7 +3,7 @@ import pickle
 
 import pandas as pd
 
-user = "Jakob"
+user = "Dominik"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
@@ -56,7 +56,7 @@ zweitstimmen_bundesgebiet = (
 )
 zweitstimmen_bundesgebiet.set_index(["Partei"], inplace=True)
 
-test = bundestagswahl_2013_2017(
+bts_bundesland, ausgleich_ueberhang, government = bundestagswahl_2013_2017(
     erststimmen,
     zweitstimmen_bundesland,
     zweitstimmen_bundesgebiet,
