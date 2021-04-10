@@ -204,88 +204,55 @@ data = pd.read_csv(
     encoding="cp1252",
 )
 
+data["Bundesland"] = data["Wahlkreis_Land"]
+data["Bundesland"].fillna(data["Liste_Land"], inplace=True)
 
-# TODO: Delete all of this later. See if something needs to be ported.
-"""
-# * Collect overall results from federal states in separate dataframe.
-temp = bundesländer.copy()
-temp.insert(0, "Stimme")
-temp.insert(0, "Partei")
-ergebnisse_bundesländer = data[temp].copy()
+rename_dict = {
+    "BY" : "Bayern",
+    "BW" : "Baden-Württemberg",
+    "SL" : "Saarland",
+    "NW" : "Nordrhein-Westfalen",
+    "BE" : "Berlin",
+    "HH" : "Hamburg",
+    "NI" : "Niedersachsen",
+    "TH" : "Thüringen",
+    "HB" : "Bremen",
+    "SN" : "Sachsen",
+    "ST" : "Sachsen-Anhalt",
+    "BB" : "Brandenburg",
+    "RP" : "Rheinland-Pfalz",
+    "SH" : "Schleswig-Holstein",
+    "HE" : "Hessen",
+    "MV" : "Mecklenburg-Vorpommern",
+}
 
-# * Drop federal states from data.
-data.drop(columns=bundesländer, inplace=True)
-
-gesamt = pd.DataFrame(columns=data.columns)
-gesamt.loc[0, "Partei"] = "Gesamt"
-gesamt.loc[0, "Stimme"] = "Erststimmen"
-gesamt.loc[1, "Partei"] = "Gesamt"
-gesamt.loc[1, "Stimme"] = "Zweitstimmen"
-
-wahlkreise = data.columns.to_list()
-for item in ["Partei", "Stimme"]:
-    wahlkreise.remove(item)
-
-if len(wahlkreise) == 300:
-    print("Genau 299 Wahlkreise plus Bundesgebiet vorhanden!")
-else:
-    print("Zu viele Wahlkreise!")
-
-for wahlkreis in wahlkreise:
-    gesamt.loc[0, wahlkreis] = (
-        data[data["Stimme"] == "Erststimmen"].loc[:, wahlkreis].astype(int).sum()
-    )
-    gesamt.loc[1, wahlkreis] = (
-        data[data["Stimme"] == "Zweitstimmen"].loc[:, wahlkreis].astype(int).sum()
-    )
-
-erststimmen = data[data["Stimme"] == "Erststimmen"].copy()
-
-erststimmen_to_save = erststimmen.copy()
-erststimmen_to_save.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
-erststimmen_to_save.to_json("../../bld/data/erststimmen.json")
-
-erststimmen.reset_index(drop=True, inplace=True)
-
-zweitstimmen = data[data["Stimme"] == "Zweitstimmen"].copy()
-zweitstimmen.reset_index(drop=True, inplace=True)
+data["Bundesland"].replace(rename_dict, inplace=True)
+data["Partei"] = data["Wahlkreis_ParteiBez"]
+data["Partei"].fillna(data["Liste_ParteiBez"], inplace=True)
+dict = {}
 
 
-zweitstimmen_to_save = zweitstimmen.copy()
-zweitstimmen_to_save.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
-zweitstimmen_to_save.to_json("../../bld/data/zweitstimmen.json")
+for bundesland in list(set(data["Bundesland"].tolist())):
+    bundesland_df = data[data["Bundesland"] == bundesland].copy()
+    key_value = {}
+    for partei in list(set(bundesland_df["Partei"].tolist())):
+        key_value[partei] = bundesland_df[bundesland_df["Partei"] == partei].copy()
+        key_value[partei].drop(
+            columns=[
+                "Wahlkreis_Land",
+                "Wahlkreis_ParteiBez",
+                "Wahlkreis_ParteiKurzBez", 
+                "Liste_Land",
+                "Liste_ParteiBez", 
+                "Liste_ParteiKurzBez",
+                "Bundesland", 
+                "Partei",
+            ], 
+            inplace=True,
+        )
+        key_value[partei].sort_values(by=["Liste_Platz"], inplace=True)
+        key_value[partei].reset_index(inplace=True, drop=True)
+    dict[bundesland] = key_value
 
-for wahlkreis in wahlkreise:
-    # Erststimmen.
-    divide_erststimmen = gesamt[gesamt["Stimme"] == "Erststimmen"].loc[0, wahlkreis]
-    erststimmen[wahlkreis] = erststimmen[wahlkreis].astype(int).div(divide_erststimmen)
-
-    # Zweistimmen.
-    divide_zweitstimmen = gesamt[gesamt["Stimme"] == "Zweitstimmen"].loc[1, wahlkreis]
-    zweitstimmen[wahlkreis] = (
-        zweitstimmen[wahlkreis].astype(int).div(divide_zweitstimmen)
-    )
-
-zweitstimmen.to_json("../../bld/data/zweitstimmen_prozentual.json")
-
-# Direktmandate nach Erststimmen
-direktmandat = erststimmen.copy()
-direktmandat.drop(columns=["Stimme", "Bundesgebiet"], inplace=True)
-
-wahlkreise.remove("Bundesgebiet")
-for wahlkreis in wahlkreise:
-    direktmandat[wahlkreis] = direktmandat[wahlkreis] == direktmandat[wahlkreis].max()
-    direktmandat[wahlkreis] = direktmandat[wahlkreis].astype(int)
-
-direktmandat.set_index("Partei", inplace=True)
-sitze_parlament = pd.DataFrame(direktmandat.sum(axis=1))
-sitze_parlament.columns = ["Direktmandate"]
-
-# Hypothetische Direktmandate
-direktmandat_hyp = pd.DataFrame(zweitstimmen[["Partei", "Bundesgebiet"]].copy())
-direktmandat_hyp["Bundesgebiet"] = direktmandat_hyp["Bundesgebiet"].multiply(598)
-
-sitze_parlament["Hypothetische Direktmandate"] = direktmandat_hyp.Bundesgebiet.to_list()
-sitze_parlament
-direktmandat[:7]
-"""
+with open("../../bld/data/bundesland_partei_listen.pickle", "wb") as handle:
+    pickle.dump(dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
