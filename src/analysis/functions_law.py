@@ -360,7 +360,9 @@ def bundestagswahl_2013_2017(
     # Keep eligible parties
     zweitstimmen_bundesgebiet_cp = zweitstimmen_bundesgebiet_cp.loc[eligible]
 
-    bundestag_seats_bef_ausgleichsmdte = zweitstimmen_bundesgebiet_cp.join(mindestsitzzahl)
+    bundestag_seats_bef_ausgleichsmdte = zweitstimmen_bundesgebiet_cp.join(
+        mindestsitzzahl
+    )
     bundestag_seats_bef_ausgleichsmdte["divisor"] = (
         bundestag_seats_bef_ausgleichsmdte["Zweitstimmen"]
         / bundestag_seats_bef_ausgleichsmdte["sum_sitze"]
@@ -404,8 +406,6 @@ def bundestagswahl_2013_2017(
             ]
         ),
     )
-
-    ausgleich_and_überhang.loc["Hamburg", ("CDU", "Sum")] = 1
 
     for bundesland in bundestagssitze_bundesland.index.tolist():
         for partei in zweitstimmen_bundesland_t.columns:
