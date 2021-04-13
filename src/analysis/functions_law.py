@@ -129,9 +129,6 @@ def sainte_lague(preliminary_divisor, data, total_available_seats):
         else:
             pass
 
-        print("Sum of seats:", sum_of_seats)
-        print("Total available seats:", total_available_seats)
-        print("Divisor:", preliminary_divisor)
         allocated_seats, sum_of_seats = core_sainte_lague(preliminary_divisor, data)
     else:
         return allocated_seats, preliminary_divisor
@@ -191,7 +188,7 @@ def allocation_seats_after2013(zweitstimmen_by_party, available_seats):
     #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
     #   verbleibenden Sitze geteilt.
 
-    print("Max num seats input", available_seats)
+    # print("Max num seats input", available_seats)
     preliminary_divisor = zweitstimmen_by_party.sum() / available_seats
     allocation_of_seats = sainte_lague_new(
         preliminary_divisor, zweitstimmen_by_party, available_seats
@@ -269,7 +266,7 @@ def last_allocation_seats(zweitstimmen_by_party, initial_seats_by_state, direktm
     #   Landeslisten durch die Zahl der jeweils nach Absatz 1 Satz 3
     #   verbleibenden Sitze geteilt.
 
-    print("Max num seats input", initial_seats_by_state)
+    # print("Max num seats input", initial_seats_by_state)
     preliminary_divisor = zweitstimmen_by_party.sum() / initial_seats_by_state
     allocation_of_seats = sainte_lague_last(
         preliminary_divisor,
@@ -333,7 +330,7 @@ def bundestagswahl_2013_2017(
 
     for bundesland in bundesländer_wahlkreise.keys():
         # Listenplätze
-        print("Bundesland:", bundesland)
+        # print("Bundesland:", bundesland)
         listenplätze_bundesland[bundesland] = allocation_seats_after2013(
             zweitstimmen_bundesland[bundesland], initial_seats_by_state.loc[bundesland]
         )
@@ -387,7 +384,7 @@ def bundestagswahl_2013_2017(
     direktmandate_bundesland_t = direktmandate_bundesland_t[eligible]
 
     for partei in zweitstimmen_bundesland_t.keys():
-        print(partei)
+        # print(partei)
         # Bundestagssitze by Land
         bundestagssitze_bundesland[partei] = last_allocation_seats(
             zweitstimmen_bundesland_t[partei],
