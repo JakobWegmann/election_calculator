@@ -73,7 +73,6 @@ bts_bundesland, ausgleich_ueberhang, government = bundestagswahl_2013_2017(
 # * Identifying marginal results with large implications
 # Idea: Change Erststimmen marginally, check the effect
 
-<<<<<<< HEAD
 with open("../../bld/data/bundesland_partei_listen.pickle", "rb") as handle:
     bundesland_partei_listen = pickle.load(handle)
 
@@ -120,7 +119,6 @@ abgeordnete_im_bundestag_final = allocate_listenplaetze(
     eligible_parties(zweitstimmen_bundesgebiet, direktmandate["Sum"]),
     listenplaetze_to_allocate,
 )
-=======
 effect_changed_erststimme = pd.DataFrame(
     0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
 )
@@ -176,7 +174,6 @@ effect_changed_erststimme.sort_values(
 # Iteratively increase and decrease number of votes for each party within each Bundesland
 # until one effect on seats appears (starting step size: 100)
 
->>>>>>> f220a57f1a7e3f7370dc5cb2cd87d62137e6ac53
 
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
