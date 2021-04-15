@@ -101,7 +101,7 @@ for wahlkreis in erststimmen.keys():
     )
 
     # Save effect size and number of necessary votes of for each Wahlkreis
-    num_changes = (bts_bundesland - bts_bundesland_manipulated).sum().abs().sum()
+    num_changes = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
 
     effect_changed_erststimme.loc[wahlkreis, "# geänderte Sitze"] = num_changes
     effect_changed_erststimme.loc[
@@ -122,6 +122,38 @@ effect_changed_erststimme.sort_values(
 # Iteratively increase and decrease number of votes for each party within each Bundesland
 # until one effect on seats appears (starting step size: 100)
 
+# Ziel: Index: Partei und ansteigend/absteigend, Keys: Bundesland
+
+zweitstimmen_bundesland_manipulated = zweitstimmen_bundesland.copy()
+zweitstimmen_bundesgebiet_manipulated = zweitstimmen_bundesgebiet.copy()
+
+num_changes = 0
+votes_change = 100
+
+while num_changes == 0:
+
+    zweitstimmen_bundesland_manipulated.loc["CDU", "Hessen"] = (
+        zweitstimmen_bundesland_manipulated.loc["CDU", "Hessen"] + votes_change
+    )
+    zweitstimmen_bundesgebiet_manipulated.loc["CDU"] + votes_change
+    (
+        bts_bundesland_manipulated,
+        ausgleich_ueberhang_manipulated,
+        government_manipulated,
+    ) = bundestagswahl_2013_2017(
+        erststimmen,
+        zweitstimmen_bundesland_manipulated,
+        zweitstimmen_bundesgebiet_manipulated,
+        bundesländer_wahlkreise,
+        initial_seats_by_state,
+    )
+
+    num_changes = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
+
+    votes_change = votes_change + 100
+    print(votes_change)
+
+bts_bundesland_manipulated - bts_bundesland
 
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
