@@ -4,7 +4,7 @@ import pickle
 import pandas as pd
 from src.analysis.functions_law import direktmandate, eligible_parties
 
-user = "Dominik"
+user = "Jakob"
 
 if user == "Dominik":
     os.chdir("/home/dominik/Dokumente/election_calculator/src/analysis")
@@ -73,6 +73,7 @@ bts_bundesland, ausgleich_ueberhang, government = bundestagswahl_2013_2017(
 # * Identifying marginal results with large implications
 # Idea: Change Erststimmen marginally, check the effect
 
+<<<<<<< HEAD
 with open("../../bld/data/bundesland_partei_listen.pickle", "rb") as handle:
     bundesland_partei_listen = pickle.load(handle)
 
@@ -119,12 +120,64 @@ abgeordnete_im_bundestag_final = allocate_listenplaetze(
     eligible_parties(zweitstimmen_bundesgebiet, direktmandate["Sum"]),
     listenplaetze_to_allocate,
 )
+=======
+effect_changed_erststimme = pd.DataFrame(
+    0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
+)
+
+for wahlkreis in erststimmen.keys():
+    print("Wahlkreis:", wahlkreis)
+    # replace value of second largest party by value of largest party + 1
+    erststimmen_manipulated = erststimmen.copy()
+    largest_party = erststimmen_manipulated[wahlkreis].nlargest(2).index.values[0]
+    second_largest_party = (
+        erststimmen_manipulated[wahlkreis].nlargest(2).index.values[1]
+    )
+    erststimmen_manipulated.loc[second_largest_party, wahlkreis] = (
+        erststimmen_manipulated.loc[largest_party, wahlkreis] + 1
+    )
+    num_votes_manipulated = (
+        erststimmen_manipulated.loc[second_largest_party, wahlkreis]
+        - erststimmen.loc[second_largest_party, wahlkreis]
+    )
+
+    # Calculate results with manipulated votes
+    (
+        bts_bundesland_manipulated,
+        ausgleich_ueberhang_manipulated,
+        government_manipulated,
+    ) = bundestagswahl_2013_2017(
+        erststimmen_manipulated,
+        zweitstimmen_bundesland,
+        zweitstimmen_bundesgebiet,
+        bundesländer_wahlkreise,
+        initial_seats_by_state,
+    )
+
+    # Save effect size and number of necessary votes of for each Wahlkreis
+    num_changes = (bts_bundesland - bts_bundesland_manipulated).sum().abs().sum()
+
+    effect_changed_erststimme.loc[wahlkreis, "# geänderte Sitze"] = num_changes
+    effect_changed_erststimme.loc[
+        wahlkreis, "benötigte Stimmen"
+    ] = num_votes_manipulated
+
+effect_changed_erststimme.sort_values(by=["benötigte Stimmen"], inplace=True)
+effect_changed_erststimme.sort_values(
+    by=["# geänderte Sitze"], ascending=False, inplace=True, kind="mergesort"
+)
+
+# Analyses of most interesting result
+# ausgleich_ueberhang-ausgleich_ueberhang_manipulated
+
+
+# * Variation in Zweitstimmen
+# Relevant level is Bundesland
+# Iteratively increase and decrease number of votes for each party within each Bundesland
+# until one effect on seats appears (starting step size: 100)
+
+>>>>>>> f220a57f1a7e3f7370dc5cb2cd87d62137e6ac53
 
 # offene Baustellen:
 # TODO Relative Pfade (pytask? oder zu nervig?)
-# TODO Stimmen pro Bundesland als Input (momentan gesamter Bund um Code zu testen)
-# TODO Spalten: Bundesländer, Zeilen: Parteien, Zellen: Absolute Anzahl an Stimmen
-# TODO      -> ist in load_data.py. Speichern, etc.?
-# TODO Noch zu finden: Sitze pro Bundesland
-# TODO Drop of non-eligible parties (relevant for FDP)
-# TODO -> Funktion eligible_parties soll das erledigen.
+# TODO government as boolean
