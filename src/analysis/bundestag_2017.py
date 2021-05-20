@@ -64,97 +64,165 @@ bts_bundesland, ausgleich_ueberhang, government = bundestagswahl_2013_2017(
     initial_seats_by_state,
 )
 
-# * Identifying marginal results with large implications
-# Idea: Change Erststimmen marginally, check the effect
+# # * Identifying marginal results with large implications
+# # Idea: Change Erststimmen marginally, check the effect
 
-effect_changed_erststimme = pd.DataFrame(
-    0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
-)
+# effect_changed_erststimme = pd.DataFrame(
+#     0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
+# )
 
-for wahlkreis in erststimmen.keys():
-    print("Wahlkreis:", wahlkreis)
-    # replace value of second largest party by value of largest party + 1
-    erststimmen_manipulated = erststimmen.copy()
-    largest_party = erststimmen_manipulated[wahlkreis].nlargest(2).index.values[0]
-    second_largest_party = (
-        erststimmen_manipulated[wahlkreis].nlargest(2).index.values[1]
-    )
-    erststimmen_manipulated.loc[second_largest_party, wahlkreis] = (
-        erststimmen_manipulated.loc[largest_party, wahlkreis] + 1
-    )
-    num_votes_manipulated = (
-        erststimmen_manipulated.loc[second_largest_party, wahlkreis]
-        - erststimmen.loc[second_largest_party, wahlkreis]
-    )
+# for wahlkreis in erststimmen.keys():
+#     print("Wahlkreis:", wahlkreis)
+#     # replace value of second largest party by value of largest party + 1
+#     erststimmen_manipulated = erststimmen.copy()
+#     largest_party = erststimmen_manipulated[wahlkreis].nlargest(2).index.values[0]
+#     second_largest_party = (
+#         erststimmen_manipulated[wahlkreis].nlargest(2).index.values[1]
+#     )
+#     erststimmen_manipulated.loc[second_largest_party, wahlkreis] = (
+#         erststimmen_manipulated.loc[largest_party, wahlkreis] + 1
+#     )
+#     num_votes_manipulated = (
+#         erststimmen_manipulated.loc[second_largest_party, wahlkreis]
+#         - erststimmen.loc[second_largest_party, wahlkreis]
+#     )
 
-    # Calculate results with manipulated votes
-    (
-        bts_bundesland_manipulated,
-        ausgleich_ueberhang_manipulated,
-        government_manipulated,
-    ) = bundestagswahl_2013_2017(
-        erststimmen_manipulated,
-        zweitstimmen_bundesland,
-        zweitstimmen_bundesgebiet,
-        bundesländer_wahlkreise,
-        initial_seats_by_state,
-    )
+#     # Calculate results with manipulated votes
+#     (
+#         bts_bundesland_manipulated,
+#         ausgleich_ueberhang_manipulated,
+#         government_manipulated,
+#     ) = bundestagswahl_2013_2017(
+#         erststimmen_manipulated,
+#         zweitstimmen_bundesland,
+#         zweitstimmen_bundesgebiet,
+#         bundesländer_wahlkreise,
+#         initial_seats_by_state,
+#     )
 
-    # Save effect size and number of necessary votes of for each Wahlkreis
-    num_changes = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
+#     # Save effect size and number of necessary votes of for each Wahlkreis
+#     num_changes = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
 
-    effect_changed_erststimme.loc[wahlkreis, "# geänderte Sitze"] = num_changes
-    effect_changed_erststimme.loc[
-        wahlkreis, "benötigte Stimmen"
-    ] = num_votes_manipulated
+#     effect_changed_erststimme.loc[wahlkreis, "# geänderte Sitze"] = num_changes
+#     effect_changed_erststimme.loc[
+#         wahlkreis, "benötigte Stimmen"
+#     ] = num_votes_manipulated
 
-effect_changed_erststimme.sort_values(by=["benötigte Stimmen"], inplace=True)
-effect_changed_erststimme.sort_values(
-    by=["# geänderte Sitze"], ascending=False, inplace=True, kind="mergesort"
-)
+# effect_changed_erststimme.sort_values(by=["benötigte Stimmen"], inplace=True)
+# effect_changed_erststimme.sort_values(
+#     by=["# geänderte Sitze"], ascending=False, inplace=True, kind="mergesort"
+# )
 
-# Analyses of most interesting result
-# ausgleich_ueberhang-ausgleich_ueberhang_manipulated
+# # Analyses of most interesting result
+# # ausgleich_ueberhang-ausgleich_ueberhang_manipulated
 
 
-# * Variation in Zweitstimmen
-# Relevant level is Bundesland
-# Iteratively increase and decrease number of votes for each party within each Bundesland
-# until one effect on seats appears (starting step size: 100)
+# # * Variation in Zweitstimmen
+# # Relevant level is Bundesland
+# # Iteratively increase and decrease number of votes for each party within each Bundesland
+# # until one effect on seats appears (starting step size: 100)
 
-# Ziel: Index: Partei und ansteigend/absteigend, Keys: Bundesland
+# # Alternative: Check for changes within next 2000 votes, pick maximum
+# # More convincing: I want to know whether chanes occur
+# # DataFrame: Bundesland, changed party, number of changed votes, effect on other partys
+# # Also Dictionary: Bundesland, Party, Numofvotes: save DataFrame with differences
+# # Kann man Fälle über alle DataFrames im Dictionary prüfen, also bspw.
+# ein Mandat mehr für Grün in BW?
 
-zweitstimmen_bundesland_manipulated = zweitstimmen_bundesland.copy()
-zweitstimmen_bundesgebiet_manipulated = zweitstimmen_bundesgebiet.copy()
+# # Determine first change, then look again for other change (substract from initial DataFrame)
 
-num_changes = 0
-votes_change = 100
 
-while num_changes == 0:
+# my_dict = {-1: 'apple', 2: 'ball', -5: "test"}
+# my_dict[535] = {"CDU": "viel", "SPD": "wenig"}
 
-    zweitstimmen_bundesland_manipulated.loc["CDU", "Hessen"] = (
-        zweitstimmen_bundesland_manipulated.loc["CDU", "Hessen"] + votes_change
-    )
-    zweitstimmen_bundesgebiet_manipulated.loc["CDU"] + votes_change
-    (
-        bts_bundesland_manipulated,
-        ausgleich_ueberhang_manipulated,
-        government_manipulated,
-    ) = bundestagswahl_2013_2017(
-        erststimmen,
-        zweitstimmen_bundesland_manipulated,
-        zweitstimmen_bundesgebiet_manipulated,
-        bundesländer_wahlkreise,
-        initial_seats_by_state,
-    )
+# # Ziel: Index: Partei und ansteigend/absteigend, Keys: Bundesland
 
-    num_changes = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
+# zweitstimmen_bundesland_manipulated = zweitstimmen_bundesland.copy()
+# zweitstimmen_bundesgebiet_manipulated = zweitstimmen_bundesgebiet.copy()
 
-    votes_change = votes_change + 100
-    print(votes_change)
+# num_changes = 0
 
-bts_bundesland_manipulated - bts_bundesland
+# factor = 4
+# votes_change = 10^4
+# vorzeichen = 1
+
+# 1335
+
+# # if change: factor - 1, and decrease votes by votes_change
+
+# # gehe so lange hoch, bis sich eine Änderung ergibt
+
+
+# [Hessen][Grünen][-2561]
+# [Hessen][Grünen][418]
+
+
+# [Grünen]["Hessen 418"]
+
+# def identify_decisive_votes(vorzeichen, factor, votes_change, num_seats_changed_before,
+#  max_votes_changed, zweitstimmen_bundesland_manipulated,
+# zweitstimmen_bundesgebiet_manipulated):
+#     """Identify necessary number of votes for a change in seats
+
+#     Input:
+
+#     Output:
+
+#     """
+
+#     print(votes_change)
+#     zweitstimmen_bundesland_manipulated.loc["CDU", "Hamburg"] = (
+#         zweitstimmen_bundesland_manipulated.loc["CDU", "Hamburg"] + votes_change
+#     )
+#     zweitstimmen_bundesgebiet_manipulated.loc["CDU"] + votes_change
+#     (
+#         bts_bundesland_manipulated,
+#         ausgleich_ueberhang_manipulated,
+#         government_manipulated,
+#     ) = bundestagswahl_2013_2017(
+#         erststimmen,
+#         zweitstimmen_bundesland_manipulated,
+#         zweitstimmen_bundesgebiet_manipulated,
+#         bundesländer_wahlkreise,
+#         initial_seats_by_state,
+#     )
+
+#     num_seats_changed = (bts_bundesland - bts_bundesland_manipulated).abs().sum().sum()
+#     change_in_seats = num_seats_changed_before - num_seats_changed
+
+#     if votes_change > max_votes_changed:
+#         print("Max number of vote variantion reached at:", votes_change)
+#         return
+
+#     while factor > 1 & change_in_seats > 0:
+#         if factor > 1:
+#             if change_in_seats == 0:
+#                 votes_change = votes_change + vorzeichen * 10 ^ factor
+#             elif change_in_seats != 0:
+#                 vorzeichen = vorzeichen*(-1)
+#                 factor = factor - 1
+
+#     elif factor == 1 & change_in_seats > 0:
+#         return bts_bundesland_manipulated, ausgleich_ueberhang_manipulated,
+#               government_manipulated
+
+
+#     while factor > 1 & votes_change < max_votes_changed:
+#         if :
+#         else:
+#             pass
+#         identify_decisive_votes(vorzeichen, factor, votes_change, max_votes_changed,
+# zweitstimmen_bundesland_manipulated, zweitstimmen_bundesgebiet_manipulated)
+
+#     else:
+
+
+# while num_changes == 0:
+
+
+# bts_bundesland_manipulated - bts_bundesland
 
 # offene Baustellen:
-# TODO Relative Pfade (pytask? oder zu nervig?)
+# TODO Relative Pfade (für pytask muss man die Pfade anpassen,
+# TODO  finde ich gerade nicht sinnvoll
 # TODO government as boolean
