@@ -3,6 +3,9 @@ import pickle
 
 import pandas as pd
 
+from src.analysis.functions_law import direktmandate
+from src.analysis.functions_law import eligible_parties
+
 user = "Jakob"
 
 if user == "Dominik":
@@ -18,6 +21,11 @@ else:
 from functions_law import partition_of_votes
 from functions_law import bundestagswahl_2013_2017
 from functions_law import allocation_seats_after2013
+
+from functions_people import prepare_lists
+from functions_people import mark_direktmandate
+from functions_people import keep_eligible_parties
+from functions_people import allocate_listenplaetze
 
 if user == "Jakob":
     path = "C:/Users/jakob/sciebo/Bonn/6th_semester/election_calculator"
@@ -64,12 +72,60 @@ bts_bundesland, ausgleich_ueberhang, government = bundestagswahl_2013_2017(
     initial_seats_by_state,
 )
 
-# # * Identifying marginal results with large implications
-# # Idea: Change Erststimmen marginally, check the effect
 
-# effect_changed_erststimme = pd.DataFrame(
-#     0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
-# )
+with open("../../bld/data/bundesland_partei_listen.pickle", "rb") as handle:
+    bundesland_partei_listen = pickle.load(handle)
+
+rename_parties = {
+    "CDU": "Christlich Demokratische Union Deutschlands",
+    "SPD": "Sozialdemokratische Partei Deutschlands",
+    "Grüne": "BÜNDNIS 90/DIE GRÜNEN",
+    "CSU": "Christlich-Soziale Union in Bayern e.V.",
+    "FDP": "Freie Demokratische Partei",
+    "AfD": "Alternative für Deutschland",
+}
+
+direktmandate = erststimmen.apply(direktmandate)
+direktmandate.rename(index=rename_parties, inplace=True)
+zweitstimmen_bundesgebiet.rename(index=rename_parties, inplace=True)
+
+abgeordnete_im_bundestag = prepare_lists(bundesland_partei_listen.copy())
+abgeordnete_im_bundestag = mark_direktmandate(
+    abgeordnete_im_bundestag,
+    bundesländer_wahlkreise,
+    direktmandate,
+)
+
+direktmandate["Sum"] = 0
+for bundesland in bundesländer_wahlkreise.keys():
+    direktmandate[bundesland] = 0
+    for wahlkreis in bundesländer_wahlkreise[bundesland]:
+        direktmandate[bundesland] = direktmandate[bundesland] + direktmandate[wahlkreis]
+    direktmandate["Sum"] = direktmandate["Sum"] + direktmandate[bundesland]
+
+bts_bundesland_t = bts_bundesland.T
+bts_bundesland_t.rename(index=rename_parties, inplace=True)
+listenplaetze_to_allocate = (
+    bts_bundesland_t - direktmandate[list(bundesländer_wahlkreise.keys())]
+)
+listenplaetze_to_allocate.fillna(0, inplace=True)
+listenplaetze_to_allocate = listenplaetze_to_allocate.astype(int)
+
+parties_eligible = eligible_parties(zweitstimmen_bundesgebiet, direktmandate["Sum"])
+
+abgeordnete_im_bundestag = keep_eligible_parties(
+    abgeordnete_im_bundestag, parties_eligible
+)
+
+abgeordnete_im_bundestag_final = allocate_listenplaetze(
+    abgeordnete_im_bundestag,
+    list(bundesländer_wahlkreise.keys()),
+    eligible_parties(zweitstimmen_bundesgebiet, direktmandate["Sum"]),
+    listenplaetze_to_allocate,
+)
+effect_changed_erststimme = pd.DataFrame(
+    0, index=erststimmen.keys(), columns=["# geänderte Sitze", "benötigte Stimmen"]
+)
 
 # for wahlkreis in erststimmen.keys():
 #     print("Wahlkreis:", wahlkreis)
