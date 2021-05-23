@@ -256,3 +256,23 @@ for bundesland in list(set(data["Bundesland"].tolist())):
 
 with open("../../bld/data/bundesland_partei_listen.pickle", "wb") as handle:
     pickle.dump(dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# * Get Wahlkreise data.
+data = pd.read_csv(
+    "../original_data/wahlkreise_info/20170228_BTW17_WKr_Gemeinden_ASCII.csv",
+    sep=";",
+    skiprows=7,
+    header=0,
+    error_bad_lines=False,
+    encoding="cp1252",
+)
+
+data.drop(columns=["Wahlkreis-von", "Wahlkreis-bis", "PLZ-mehrere"], inplace=True)
+data["Gemeindename"] = [s.split(", ", 1)[0] for s in data["Gemeindename"].tolist()]
+
+dict = {}
+for index in range(len(data["Gemeindename"].tolist())):
+    dict[data["Gemeindename"].iloc[index]] = data["Wahlkreis-Bez"].iloc[index]
+
+with open("../../bld/data/gemeinde_wahlkreis_listen.pickle", "wb") as handle:
+    pickle.dump(dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
