@@ -55,8 +55,7 @@ def keep_eligible_parties(listen_by_party_and_bundesland, eligible_parties):
 
     Input:
     listen_by_party_and_bundesland (dict): contains for each Bundesland
-        a dictionary containing parties with their lists and a column
-        Sitz_Bundestag
+        a dictionary containing all parties
     eligible_parties (dict): list with parties that are eligible for
         the Bundestag
 
@@ -114,3 +113,56 @@ available_list_seats,
         listen_by_party_and_bundesland[bundesland] = parteilisten
 
     return listen_by_party_and_bundesland
+
+
+def tag_bundestagsabgeordnete(
+listen_by_party_and_bundesland,
+bundesländer_wahlkreise,
+direktmandate,
+eligible_parties,
+bundesländer,
+available_list_seats,
+):
+    """ This function tags all people who have eventually become
+    a member of the Bundestag.
+
+    Input:
+    listen_by_party_and_bundesland (dict): contains for each Bundesland
+        a dictionary containing the eligible parties with their lists 
+        and a column Sitz_Bundestag which is already marked for Direktmandate
+    bundesländer_wahlkreise (dict): contains the for each Bundesland a list
+        with all of the Wahlkreise in this Bundesland
+    direktmandate (pd.DataFrame): indicates which party one in each Wahlkreis
+    bundesländer (list): contains all Bundesländer
+    eligible_parties (list): all parties eligible for the Bundestag
+    available_list_seats (pd.DataFrame): contains for each Bundesland (column)
+        the number of available list seats for each party (row)
+
+    Output:
+    listen_by_party_and_bundesland (dict): same as input but now with Sitz_Bundestag
+        marked also for the list candidates 
+
+    """
+
+    listen_by_party_and_bundesland = keep_eligible_parties(
+        listen_by_party_and_bundesland, 
+        eligible_parties,
+    )
+
+    listen_by_party_and_bundesland = prepare_lists(listen_by_party_and_bundesland)
+
+    listen_by_party_and_bundesland = mark_direktmandate(
+        listen_by_party_and_bundesland,
+        bundesländer_wahlkreise,
+        direktmandate,
+    )
+
+    listen_by_party_and_bundesland = allocate_listenplaetze(
+        listen_by_party_and_bundesland,
+        bundesländer,
+        eligible_parties,
+        available_list_seats,
+    )
+
+    return listen_by_party_and_bundesland
+  
